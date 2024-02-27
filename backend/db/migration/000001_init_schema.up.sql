@@ -1,29 +1,92 @@
-CREATE TABLE "follows" (
-  "following_user_id" integer,
-  "followed_user_id" integer,
-  "created_at" timestamp
-);
-
 CREATE TABLE "users" (
-  "id" integer PRIMARY KEY,
-  "username" varchar,
-  "role" varchar,
-  "created_at" timestamp
+  "id" bigserial PRIMARY KEY NOT NULL,
+  "email" varchar UNIQUE NOT NULL,
+  "password" varchar NOT NULL,
+  "username" varchar UNIQUE NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now()),
+  "birthday" timestamptz
 );
 
-CREATE TABLE "posts" (
-  "id" integer PRIMARY KEY,
-  "title" varchar,
-  "body" text,
-  "user_id" integer,
-  "status" varchar,
-  "created_at" timestamp
+CREATE TABLE "workouts" (
+  "id" bigserial PRIMARY KEY NOT NULL,
+  "user_id" bigserial NOT NULL,
+  "title" varchar NOT NULL,
+  "body" text NOT NULL,
+  "last" timestamp NOT NULL,
+  "exe1" bigserial,
+  "exe2" bigserial,
+  "exe3" bigserial,
+  "exe4" bigserial,
+  "exe5" bigserial,
+  "exe6" bigserial,
+  "exe7" bigserial
 );
 
-COMMENT ON COLUMN "posts"."body" IS 'Content of the post';
+CREATE TABLE "exercises" (
+  "id" bigserial PRIMARY KEY NOT NULL,
+  "workout_id" bigserial NOT NULL,
+  "type" varchar NOT NULL,
+  "title" varchar NOT NULL,
+  "desc" text,
+  "set1" bigint,
+  "weight1" bigint,
+  "set2" bigint,
+  "weight2" bigint,
+  "set3" bigint,
+  "weight3" bigint,
+  "set4" bigint,
+  "weight4" bigint,
+  "last_volume" bigint NOT NULL DEFAULT 0
+);
 
-ALTER TABLE "posts" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+CREATE INDEX ON "users" ("email");
 
-ALTER TABLE "follows" ADD FOREIGN KEY ("following_user_id") REFERENCES "users" ("id");
+CREATE INDEX ON "users" ("username");
 
-ALTER TABLE "follows" ADD FOREIGN KEY ("followed_user_id") REFERENCES "users" ("id");
+CREATE INDEX ON "workouts" ("user_id");
+
+CREATE INDEX ON "workouts" ("exe1");
+
+CREATE INDEX ON "workouts" ("exe2");
+
+CREATE INDEX ON "workouts" ("exe3");
+
+CREATE INDEX ON "workouts" ("exe4");
+
+CREATE INDEX ON "workouts" ("exe5");
+
+CREATE INDEX ON "workouts" ("exe6");
+
+CREATE INDEX ON "workouts" ("exe7");
+
+COMMENT ON COLUMN "users"."email" IS 'email to sign in - also to send reminders';
+
+COMMENT ON COLUMN "workouts"."body" IS 'Description of workout';
+
+COMMENT ON COLUMN "workouts"."last" IS 'Timestamp of the last time completed';
+
+COMMENT ON COLUMN "exercises"."type" IS 'The body section this exercise hits - chest, back, etc.';
+
+COMMENT ON COLUMN "exercises"."title" IS 'What is the exercise called?';
+
+COMMENT ON COLUMN "exercises"."desc" IS 'description of the exercies - good for reminders';
+
+COMMENT ON COLUMN "exercises"."last_volume" IS 'tracks what the overall volume was the last time this exercise was performed';
+
+ALTER TABLE "workouts" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+
+ALTER TABLE "workouts" ADD FOREIGN KEY ("exe1") REFERENCES "exercises" ("id");
+
+ALTER TABLE "workouts" ADD FOREIGN KEY ("exe2") REFERENCES "exercises" ("id");
+
+ALTER TABLE "workouts" ADD FOREIGN KEY ("exe3") REFERENCES "exercises" ("id");
+
+ALTER TABLE "workouts" ADD FOREIGN KEY ("exe4") REFERENCES "exercises" ("id");
+
+ALTER TABLE "workouts" ADD FOREIGN KEY ("exe5") REFERENCES "exercises" ("id");
+
+ALTER TABLE "workouts" ADD FOREIGN KEY ("exe6") REFERENCES "exercises" ("id");
+
+ALTER TABLE "workouts" ADD FOREIGN KEY ("exe7") REFERENCES "exercises" ("id");
+
+ALTER TABLE "exercises" ADD FOREIGN KEY ("workout_id") REFERENCES "workouts" ("id");
