@@ -24,10 +24,10 @@ step_db:
 # with the wsl specifications that I have while developing this, this answer below made the go-migration work!
 # https://community.grafana.com/t/dial-tcp-127-0-0-1-connect-connection-refused/13071/6
 migrateup: # migrates the database 'swole-goal' up to the current migration version
-	migrate -path backend/db/migration -database "postgresql://root:secret@host.docker.internal:5432/swole_goal?sslmode=disable" -verbose up
+	migrate -path db/migration -database "postgresql://root:secret@host.docker.internal:5432/swole_goal?sslmode=disable" -verbose up
 
 migratedown: # migrates the database 'swole-goal' back to the previous migration version
-	migrate -path backend/db/migration -database "postgresql://root:secret@host.docker.internal:5432/swole_goal?sslmode=disable" -verbose down
+	migrate -path db/migration -database "postgresql://root:secret@host.docker.internal:5432/swole_goal?sslmode=disable" -verbose down
 
 # generates a new sqlc compiled sql statement to run
 sqlc:
