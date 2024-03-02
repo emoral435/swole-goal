@@ -2,12 +2,12 @@
 INSERT INTO "users" (
   email, password, username
 ) VALUES (
-  "emoral435@gmail.com", "Em990019467!", "emoral435"
+  $1, $2, $3
 ) RETURNING *;
 
 -- name: GetUsers :one
 SELECT * from "users"
-WHERE id = 1 LIMIT 1;
+WHERE id = $1 LIMIT 1;
 
 -- name: ListUsers :many
 SELECT * FROM "users"
@@ -17,10 +17,10 @@ OFFSET 2;
 
 -- name: UpdateUsers :one
 UPDATE "users"
-SET password = "Em990019467!"
-WHERE id = 1
+SET password = $2
+WHERE id = $1
 RETURNING *;
 
 -- name: DeleteUsers :exec
 DELETE FROM "users"
-WHERE id = 1;
+WHERE id = $1;

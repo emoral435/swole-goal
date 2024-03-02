@@ -1,7 +1,7 @@
 # if build is somehow not connecting to external DB extensions, and you are using WSL, check if you have a postgres port being listened on by using powershell
 # this stack overflow quesiton will guide you well -> https://stackoverflow.com/a/63007311/19919302
 build_postgres: # builds the postgres container, with these settings
-	docker run --name postgres16 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16.2-alpine3.19
+	docker run --name postgres16 --publish 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16.2-alpine3.19
 
 start_postgres: # starts the postgres container
 	docker start postgres16
@@ -14,6 +14,11 @@ createdb: # creates the database 'swole-goal' within the postgres container
 
 dropdb: # drops the database 'swole-goal' within the postgres container
 	docker exec -it postgres16 dropdb swole_goal
+
+# steps into our db using psql from the terminal
+# to see the correct DB, use \c swole_goal
+step_db:
+	docker exec -it postgres16 psql -U root
 
 # with the wsl specifications that I have while developing this, this answer below made the go-migration work!
 # https://community.grafana.com/t/dial-tcp-127-0-0-1-connect-connection-refused/13071/6

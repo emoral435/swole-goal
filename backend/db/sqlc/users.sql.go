@@ -13,12 +13,18 @@ const createUser = `-- name: CreateUser :one
 INSERT INTO "users" (
   email, password, username
 ) VALUES (
-  "emoral435@gmail.com", "Em990019467!", "emoral435"
+  $1, $2, $3
 ) RETURNING id, email, password, username, created_at, birthday
 `
 
-func (q *Queries) CreateUser(ctx context.Context) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser)
+type CreateUserParams struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Username string `json:"username"`
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, createUser, arg.Email, arg.Password, arg.Username)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -33,21 +39,21 @@ func (q *Queries) CreateUser(ctx context.Context) (User, error) {
 
 const deleteUsers = `-- name: DeleteUsers :exec
 DELETE FROM "users"
-WHERE id = 1
+WHERE id = $1
 `
 
-func (q *Queries) DeleteUsers(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, deleteUsers)
+func (q *Queries) DeleteUsers(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteUsers, id)
 	return err
 }
 
 const getUsers = `-- name: GetUsers :one
 SELECT id, email, password, username, created_at, birthday from "users"
-WHERE id = 1 LIMIT 1
+WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetUsers(ctx context.Context) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUsers)
+func (q *Queries) GetUsers(ctx context.Context, id int64) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUsers, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -99,13 +105,18 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 
 const updateUsers = `-- name: UpdateUsers :one
 UPDATE "users"
-SET password = "Em990019467!"
-WHERE id = 1
+SET password = $2
+WHERE id = $1
 RETURNING id, email, password, username, created_at, birthday
 `
 
-func (q *Queries) UpdateUsers(ctx context.Context) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUsers)
+type UpdateUsersParams struct {
+	ID       int64  `json:"id"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) UpdateUsers(ctx context.Context, arg UpdateUsersParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUsers, arg.ID, arg.Password)
 	var i User
 	err := row.Scan(
 		&i.ID,
