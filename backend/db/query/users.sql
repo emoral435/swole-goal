@@ -1,0 +1,26 @@
+-- name: CreateUser :one
+INSERT INTO "users" (
+  email, password, username
+) VALUES (
+  "emoral435@gmail.com", "Em990019467!", "emoral435"
+) RETURNING *;
+
+-- name: GetUsers :one
+SELECT * from "users"
+WHERE id = 1 LIMIT 1;
+
+-- name: ListUsers :many
+SELECT * FROM "users"
+ORDER BY id
+LIMIT 1
+OFFSET 2;
+
+-- name: UpdateUsers :one
+UPDATE "users"
+SET password = "Em990019467!"
+WHERE id = 1
+RETURNING *;
+
+-- name: DeleteUsers :exec
+DELETE FROM "users"
+WHERE id = 1;
