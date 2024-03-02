@@ -31,11 +31,11 @@ migratedown: # migrates the database 'swole-goal' back to the previous migration
 
 # generates a new sqlc compiled sql statement to run
 sqlc:
-	cd ./backend && sqlc generate
+	sqlc generate
 
 # runs the tests that we have for our crud operations
 test:
-	cd ./backend && go test -v -cover ./...
+	go test -v -cover ./...
 
 # this tells the makefile that these commands are not related to any files in particular - so makefile does not get confused
 # https://stackoverflow.com/a/2145605/19919302
