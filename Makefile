@@ -23,6 +23,10 @@ migrateup: # migrates the database 'swole-goal' up to the current migration vers
 migratedown: # migrates the database 'swole-goal' back to the previous migration version
 	migrate -path backend/db/migration -database "postgresql://root:secret@host.docker.internal:5432/swole_goal?sslmode=disable" -verbose down
 
+# generates a new sqlc compiled sql statement to run
+sqlc:
+	cd ./backend && sqlc generate
+
 # this tells the makefile that these commands are not related to any files in particular - so makefile does not get confused
 # https://stackoverflow.com/a/2145605/19919302
-.PHONY: createdb postgres dropdb migrateup migratedown
+.PHONY: createdb postgres dropdb migrateup migratedown sqlc
