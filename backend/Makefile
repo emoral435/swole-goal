@@ -1,3 +1,6 @@
+# NOTE for dev env
+# DB_URL=postgresql://root:secret@host.docker.internal:5432/swole_goal?sslmode=disable
+DB_URL=postgresql://root:secret@localhost:5432/swole_goal?sslmode=disable
 # QUICKFIX: if build is somehow not connecting to external DB extensions, and you are using WSL, check if you have a postgres port being listened on by using powershell
 # this stack overflow quesiton will guide you well -> https://stackoverflow.com/a/63007311/19919302
 # PERMANENT FIX: check to see if postgres runs on start on windows. if it does, disable that, and see if the problemn persists.
@@ -24,10 +27,10 @@ step_db:
 # with the wsl specifications that I have while developing this, this answer below made the go-migration work!
 # https://community.grafana.com/t/dial-tcp-127-0-0-1-connect-connection-refused/13071/6
 migrateup: # migrates the database 'swole-goal' up to the current migration version
-	migrate -path db/migration -database "postgresql://root:secret@host.docker.internal:5432/swole_goal?sslmode=disable" -verbose up
+	migrate -path db/migration -database "${DB_URL}" -verbose up
 
 migratedown: # migrates the database 'swole-goal' back to the previous migration version
-	migrate -path db/migration -database "postgresql://root:secret@host.docker.internal:5432/swole_goal?sslmode=disable" -verbose down
+	migrate -path db/migration -database "${DB_URL}" -verbose down
 
 # generates a new sqlc compiled sql statement to run
 sqlc:

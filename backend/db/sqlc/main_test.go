@@ -13,7 +13,9 @@ var testQueries *Queries
 
 const (
 	dbDriver = "postgres"
-	dbSource = "postgresql://root:secret@host.docker.internal:5432/swole_goal?sslmode=disable"
+	// NOTe this is used for dev environments
+	// dbSource = "postgresql://root:secret@host.docker.internal:5432/swole_goal?sslmode=disable"
+	dbSource = "postgresql://root:secret@localhost:5432/swole_goal?sslmode=disable"
 )
 
 func TestMain(m *testing.M) {
