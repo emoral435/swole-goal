@@ -1,5 +1,6 @@
-# if build is somehow not connecting to external DB extensions, and you are using WSL, check if you have a postgres port being listened on by using powershell
+# QUICKFIX: if build is somehow not connecting to external DB extensions, and you are using WSL, check if you have a postgres port being listened on by using powershell
 # this stack overflow quesiton will guide you well -> https://stackoverflow.com/a/63007311/19919302
+# PERMANENT FIX: check to see if postgres runs on start on windows. if it does, disable that, and see if the problemn persists.
 build_postgres: # builds the postgres container, with these settings
 	docker run --name postgres16 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16.2-alpine3.19
 
@@ -31,6 +32,10 @@ migratedown: # migrates the database 'swole-goal' back to the previous migration
 # generates a new sqlc compiled sql statement to run
 sqlc:
 	cd ./backend && sqlc generate
+
+# runs the tests that we have for our crud operations
+test:
+	cd ./backend && go test -v -cover ./...
 
 # this tells the makefile that these commands are not related to any files in particular - so makefile does not get confused
 # https://stackoverflow.com/a/2145605/19919302
