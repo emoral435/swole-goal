@@ -44,7 +44,12 @@ test:
 # see https://golangci-lint.run/usage/install/ for more documentation
 golint:
 	golangci-lint run ./.../...
-	
+
+# lints the files in our backend repo, aside from our migration files (premade)
+# see https://docs.sqlfluff.com/en/stable/gettingstarted.html
+sqlint:
+	sqlfluff lint ./
+
 # this tells the makefile that these commands are not related to any files in particular - so makefile does not get confused
 # https://stackoverflow.com/a/2145605/19919302
 .PHONY: createdb postgres dropdb migrateup migratedown sqlc golint sqlint
