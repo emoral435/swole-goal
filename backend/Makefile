@@ -49,6 +49,9 @@ golint:
 # see https://docs.sqlfluff.com/en/stable/gettingstarted.html
 sqlint:
 	sqlfluff lint ./
+	echo 'always run your sql against this'
+	echo 'https://online.sqlfluff.com/fluffed?sql=H4sIAKWO5GUC_32QvU7DMBSF51ryOxxVGaBKhoStFUNpnGIpTZDjgBgjcodITVrFRcDbY6MY1EpluMv9-c65J4owND0tsRmpOVFtaMTyMBBnsqiE0pCFLjF_t30zxw1nwIz6ptuHODbGfBzGNoSbOgpnt3he57Wops0gDhEktu7cSAldq0IWWyxWnHEWee0tnZywmZQrkYuNxgKZKndem7OXR6EEuhb3CGLkcic14nNQ3hlP6pvh6yqqVKlQeHi1NM5-SJzNYtvPskpoJOfU-thO0XiH9VO61uKP5458HM5ecuGWs6u_p7SnXzh90htnqTVt6f98v_oGDJJVFrcBAAA%3D&dialect=postgres'
+	echo 'this will format your sql to get the passing ci'
 
 # this tells the makefile that these commands are not related to any files in particular - so makefile does not get confused
 # https://stackoverflow.com/a/2145605/19919302
