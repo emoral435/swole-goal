@@ -25,7 +25,7 @@
 * An open-source solution to save money and customize to a communities liking 🤩💫
 
 ## The Wiki 📕
-Visit the [wiki] in order to see more documentation about...
+Visit the [wiki](https://github.com/emoral435/swole-goal/wiki) in order to see more documentation about...
 * How to use the software
 * The database, and its general initial schema
 * Contribution Guidelines

@@ -40,6 +40,11 @@ sqlc:
 test:
 	go test -v -cover ./...
 
+# lints the files found in our go files!
+# https://golangci-lint.run/usage/install/ for more documentation
+golint:
+	golangci-lint run ./.../...
+
 # this tells the makefile that these commands are not related to any files in particular - so makefile does not get confused
 # https://stackoverflow.com/a/2145605/19919302
-.PHONY: createdb postgres dropdb migrateup migratedown sqlc
+.PHONY: createdb postgres dropdb migrateup migratedown sqlc golint
