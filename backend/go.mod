@@ -1,3 +1,4 @@
+// Package swole-goal is an open-source solution to monitor and track your weightlifting journey
 module github.com/emoral435/swole-goal
 
 go 1.22.0

@@ -4,18 +4,14 @@ import (
 	"context"
 	"testing"
 
-	util "github.com/emoral435/swole-goal/utils"
 	"github.com/stretchr/testify/require"
 )
 
+// TestCreateUser: tests CreateUser methods
 func TestCreateUser(t *testing.T) {
-	arg := CreateUserParams{
-		Email:    util.RandomEmail(10),
-		Password: util.RandomPassword(15),
-		Username: util.RandomUsername(10),
-	}
+	arg := GenRandUser()
 
-	user, err := testQueries.CreateUser(context.Background(), arg)
+	user, err := testQueries.CreateUser(context.Background(), *arg)
 	// if query failed
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
