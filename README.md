@@ -36,4 +36,5 @@ And more!
 
 ## Get in touch 💬
 If you liked what you saw, feel free to contact me! email: emoral435@gmail.com
+
 [Star Logs 🚀](https://starlogs.dev/emoral435/swole-goal)
