@@ -1,19 +1,20 @@
 -- name: CreateUser :one
 INSERT INTO "users" (
-  email, password, username
+    email, password, username
 ) VALUES (
-  $1, $2, $3
+    $1, $2, $3
 ) RETURNING *;
 
 -- name: GetUsers :one
-SELECT * from "users"
+SELECT * FROM "users"
 WHERE id = $1 LIMIT 1;
 
 -- name: ListUsers :many
 SELECT * FROM "users"
 ORDER BY id
-LIMIT 1
-OFFSET 2;
+LIMIT
+    1
+    OFFSET 2;
 
 -- name: UpdateUsers :one
 UPDATE "users"
