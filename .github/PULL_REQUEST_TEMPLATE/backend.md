@@ -11,4 +11,8 @@ Sign-off message is added to all commits
 
 [ ] Documentation for API changes or DB Changes?
 
-[ ] Documentation (manuals or wiki) has been updated or is not required
+[ ] Lint ran?
+
+[ ] Sign-off message is added to all commits?
+
+[ ] Documentation (manuals or wiki) has been updated or is not required?
