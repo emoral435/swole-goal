@@ -1,22 +1,20 @@
-name: sqlfluff with reviewdog
-on:
-  pull_request:
+# found on https://github.com/sqlfluff/sqlfluff-github-actions/tree/main/menu_of_workflows/sunrise_movement , edited to current sqlfluff workflow
+name: Lint SQL
+
+on: [pull_request]
+
 jobs:
-  test-check:
-    name: runner / sqlfluff (github-check)
+  lint-models:
     runs-on: ubuntu-latest
+    defaults:
+        run:
+          working-directory: ./backend/db/query
     steps:
-      - uses: actions/checkout@v2
-      - uses: yu-iskw/action-sqlfluff@v3
-        id: lint-sql
+      - uses: "actions/checkout@v2"
+      - uses: "actions/setup-python@v2"
         with:
-          github_token: ${{ secrets.github_token }}
-          reporter: github-pr-review
-          sqlfluff_version: "2.0.7"
-          sqlfluff_command: "fix" # Or "lint"
-          paths: '${{ github.workspace }}/backend/db/query'
-      - name: 'Show outputs (Optional)'
-        shell: bash
-        run: |
-          echo '${{ steps.lint-sql.outputs.sqlfluff-results }}' | jq -r '.'
-          echo '${{ steps.lint-sql.outputs.sqlfluff-results-rdjson }}' | jq -r '.'
+            python-version: "3.8"
+      - name: Install SQLFluff
+        run: "pip install sqlfluff"
+      - name: Lint Queries
+        run: "sqlfluff lint ./"
