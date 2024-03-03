@@ -15,6 +15,12 @@ INSERT INTO "users" (
 SELECT * FROM "users"
 WHERE id = $1 LIMIT 1;
 
+-- NumUsers: returns the number of users
+--
+-- returns: the number of users
+-- name: NumUsers :one
+SELECT COUNT(*) FROM "users";
+
 -- GetUserEmail: returns an existing user, given their unique email
 --
 -- returns: the user's corresponding row

@@ -38,6 +38,7 @@ sqlc:
 
 # runs the tests that we have for our crud operations
 test:
+	go clean -testcache
 	go test -v -cover ./...
 
 # lints the files found in our go files!

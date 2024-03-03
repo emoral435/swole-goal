@@ -139,6 +139,20 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
+const numUsers = `-- name: NumUsers :one
+SELECT COUNT(*) FROM "users"
+`
+
+// NumUsers: returns the number of users
+//
+// returns: the number of users
+func (q *Queries) NumUsers(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, numUsers)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const updateBirthday = `-- name: UpdateBirthday :one
 UPDATE "users"
 SET birthday = $2
