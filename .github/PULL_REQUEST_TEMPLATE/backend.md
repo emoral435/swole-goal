@@ -7,12 +7,12 @@ Code is properly formatted
 
 Sign-off message is added to all commits
 
-[ ] Tests (unit, integration, api and/or acceptance) are included
+- [ ] Tests (unit, integration, api and/or acceptance) are included
 
-[ ] Documentation for API changes or DB Changes?
+- [ ] Documentation for API changes or DB Changes?
 
-[ ] Lint ran?
+- [ ] Lint ran?
 
-[ ] Sign-off message is added to all commits?
+- [ ] Sign-off message is added to all commits?
 
-[ ] Documentation (manuals or wiki) has been updated or is not required?
+- [ ] Documentation (manuals or wiki) has been updated or is not required?
