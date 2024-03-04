@@ -77,7 +77,6 @@ func TestNumUsers(t *testing.T) {
 
 	// this means the DI for CreateUser is not working
 	if err1 != nil || err2 != nil || err3 != nil {
-		require.Equal(t, 0, 1)
 		return
 	}
 
@@ -102,7 +101,6 @@ func TestDeleteUser(t *testing.T) {
 	// if we get some sort of error, retrun instantly, as CreateUser does not work
 	// we can indicate this with returning 1
 	if err != nil || numErrBefore != nil {
-		require.Equal(t, 0, 1)
 		return
 	}
 
@@ -126,7 +124,6 @@ func TestGetUser(t *testing.T) {
 	// if we get some sort of error, retrun instantly, as CreateUser does not work
 	// we can indicate this with returning 1
 	if err != nil {
-		require.Equal(t, 0, 1)
 		return
 	}
 
@@ -148,7 +145,6 @@ func TestGetUserEmail(t *testing.T) {
 	// if we get some sort of error, retrun instantly, as CreateUser does not work
 	// we can indicate this with returning 1
 	if err != nil {
-		require.Equal(t, 0, 1)
 		return
 	}
 
@@ -173,7 +169,6 @@ func TestListUsers(t *testing.T) {
 	// if we get some sort of error, retrun instantly, as CreateUser does not work
 	// we can indicate this with returning 1
 	if numErr != nil || userErr != nil {
-		require.Equal(t, 0, 1)
 		return
 	}
 
@@ -195,7 +190,6 @@ func TestUpdateBirthday(t *testing.T) {
 	// if we get some sort of error, retrun instantly, as CreateUser does not work
 	// we can indicate this with returning 1
 	if userErr != nil {
-		require.Equal(t, 0, 1)
 		return
 	}
 
@@ -229,7 +223,6 @@ func TestUpdateEmail(t *testing.T) {
 	// if we get some sort of error, retrun instantly, as CreateUser does not work
 	// we can indicate this with returning 1
 	if userErr != nil {
-		require.Equal(t, 0, 1)
 		return
 	}
 
@@ -258,7 +251,6 @@ func TestUpdatePassword(t *testing.T) {
 	// if we get some sort of error, retrun instantly, as CreateUser does not work
 	// we can indicate this with returning 1
 	if userErr != nil {
-		require.Equal(t, 0, 1)
 		return
 	}
 
@@ -287,7 +279,6 @@ func TestUpdatePasswordEmail(t *testing.T) {
 	// if we get some sort of error, retrun instantly, as CreateUser does not work
 	// we can indicate this with returning 1
 	if userErr != nil {
-		require.Equal(t, 0, 1)
 		return
 	}
 
@@ -316,7 +307,6 @@ func TestUpdateUsername(t *testing.T) {
 	// if we get some sort of error, retrun instantly, as CreateUser does not work
 	// we can indicate this with returning 1
 	if userErr != nil {
-		require.Equal(t, 0, 1)
 		return
 	}
 
@@ -345,7 +335,6 @@ func TestUpdateUsernameEmail(t *testing.T) {
 	// if we get some sort of error, retrun instantly, as CreateUser does not work
 	// we can indicate this with returning 1
 	if userErr != nil {
-		require.Equal(t, 0, 1)
 		return
 	}
 

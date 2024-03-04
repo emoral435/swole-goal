@@ -12,17 +12,17 @@ import (
 
 const createWorkout = `-- name: CreateWorkout :one
 INSERT INTO "workouts" (
-    user_id, title, body, last_total_volume
+    user_id, title, body, last_time
 ) VALUES (
-    (SELECT users.id FROM "users" WHERE users.id = $1), $2, $3, $4
-) RETURNING id, user_id, title, body, last_total_volume
+    (SELECT "users".id FROM "users" WHERE "users".id = $1), $2, $3, $4
+) RETURNING id, user_id, title, body, last_time
 `
 
 type CreateWorkoutParams struct {
-	ID              int64     `json:"id"`
-	Title           string    `json:"title"`
-	Body            string    `json:"body"`
-	LastTotalVolume time.Time `json:"last_total_volume"`
+	ID       int64     `json:"id"`
+	Title    string    `json:"title"`
+	Body     string    `json:"body"`
+	LastTime time.Time `json:"last_time"`
 }
 
 // CreateWorkout: returns a new workout, provided their email, password, and username
@@ -33,7 +33,7 @@ func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (W
 		arg.ID,
 		arg.Title,
 		arg.Body,
-		arg.LastTotalVolume,
+		arg.LastTime,
 	)
 	var i Workout
 	err := row.Scan(
@@ -41,7 +41,7 @@ func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (W
 		&i.UserID,
 		&i.Title,
 		&i.Body,
-		&i.LastTotalVolume,
+		&i.LastTime,
 	)
 	return i, err
 }
@@ -73,7 +73,7 @@ func (q *Queries) DeleteSingleWorkout(ctx context.Context, id int64) error {
 }
 
 const getUserWorkouts = `-- name: GetUserWorkouts :many
-SELECT id, user_id, title, body, last_total_volume FROM "workouts"
+SELECT id, user_id, title, body, last_time FROM "workouts"
 WHERE user_id = $1
 `
 
@@ -94,7 +94,7 @@ func (q *Queries) GetUserWorkouts(ctx context.Context, userID int64) ([]Workout,
 			&i.UserID,
 			&i.Title,
 			&i.Body,
-			&i.LastTotalVolume,
+			&i.LastTime,
 		); err != nil {
 			return nil, err
 		}
@@ -110,7 +110,7 @@ func (q *Queries) GetUserWorkouts(ctx context.Context, userID int64) ([]Workout,
 }
 
 const getWorkout = `-- name: GetWorkout :one
-SELECT id, user_id, title, body, last_total_volume FROM "workouts"
+SELECT id, user_id, title, body, last_time FROM "workouts"
 WHERE id = $1 LIMIT 1
 `
 
@@ -125,19 +125,19 @@ func (q *Queries) GetWorkout(ctx context.Context, id int64) (Workout, error) {
 		&i.UserID,
 		&i.Title,
 		&i.Body,
-		&i.LastTotalVolume,
+		&i.LastTime,
 	)
 	return i, err
 }
 
-const updateBody = `-- name: UpdateBody :one
+const updateWorkoutBody = `-- name: UpdateWorkoutBody :one
 UPDATE "workouts"
 SET body = $2
 WHERE id = $1
-RETURNING id, user_id, title, body, last_total_volume
+RETURNING id, user_id, title, body, last_time
 `
 
-type UpdateBodyParams struct {
+type UpdateWorkoutBodyParams struct {
 	ID   int64  `json:"id"`
 	Body string `json:"body"`
 }
@@ -145,55 +145,55 @@ type UpdateBodyParams struct {
 // UpdateBody: updates workout's body text given its workouts id
 //
 // returns: the workouts
-func (q *Queries) UpdateBody(ctx context.Context, arg UpdateBodyParams) (Workout, error) {
-	row := q.db.QueryRowContext(ctx, updateBody, arg.ID, arg.Body)
+func (q *Queries) UpdateWorkoutBody(ctx context.Context, arg UpdateWorkoutBodyParams) (Workout, error) {
+	row := q.db.QueryRowContext(ctx, updateWorkoutBody, arg.ID, arg.Body)
 	var i Workout
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.Title,
 		&i.Body,
-		&i.LastTotalVolume,
+		&i.LastTime,
 	)
 	return i, err
 }
 
-const updateLastWorkout = `-- name: UpdateLastWorkout :one
+const updateWorkoutLast = `-- name: UpdateWorkoutLast :one
 UPDATE "workouts"
-SET last_total_volume = $2
+SET last_time = $2
 WHERE id = $1
-RETURNING id, user_id, title, body, last_total_volume
+RETURNING id, user_id, title, body, last_time
 `
 
-type UpdateLastWorkoutParams struct {
-	ID              int64     `json:"id"`
-	LastTotalVolume time.Time `json:"last_total_volume"`
+type UpdateWorkoutLastParams struct {
+	ID       int64     `json:"id"`
+	LastTime time.Time `json:"last_time"`
 }
 
 // UpdateLastWorkout: updates workout's last workout time given its id
 //
 // returns: the workout's new corresponding row
-func (q *Queries) UpdateLastWorkout(ctx context.Context, arg UpdateLastWorkoutParams) (Workout, error) {
-	row := q.db.QueryRowContext(ctx, updateLastWorkout, arg.ID, arg.LastTotalVolume)
+func (q *Queries) UpdateWorkoutLast(ctx context.Context, arg UpdateWorkoutLastParams) (Workout, error) {
+	row := q.db.QueryRowContext(ctx, updateWorkoutLast, arg.ID, arg.LastTime)
 	var i Workout
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.Title,
 		&i.Body,
-		&i.LastTotalVolume,
+		&i.LastTime,
 	)
 	return i, err
 }
 
-const updateTitle = `-- name: UpdateTitle :one
+const updateWorkoutTitle = `-- name: UpdateWorkoutTitle :one
 UPDATE "workouts"
 SET title = $2
 WHERE id = $1
-RETURNING id, user_id, title, body, last_total_volume
+RETURNING id, user_id, title, body, last_time
 `
 
-type UpdateTitleParams struct {
+type UpdateWorkoutTitleParams struct {
 	ID    int64  `json:"id"`
 	Title string `json:"title"`
 }
@@ -201,15 +201,15 @@ type UpdateTitleParams struct {
 // UpdateTitle: updates workouts title given its id
 //
 // returns: the workout's new corresponding row
-func (q *Queries) UpdateTitle(ctx context.Context, arg UpdateTitleParams) (Workout, error) {
-	row := q.db.QueryRowContext(ctx, updateTitle, arg.ID, arg.Title)
+func (q *Queries) UpdateWorkoutTitle(ctx context.Context, arg UpdateWorkoutTitleParams) (Workout, error) {
+	row := q.db.QueryRowContext(ctx, updateWorkoutTitle, arg.ID, arg.Title)
 	var i Workout
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.Title,
 		&i.Body,
-		&i.LastTotalVolume,
+		&i.LastTime,
 	)
 	return i, err
 }

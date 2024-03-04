@@ -48,5 +48,5 @@ type Workout struct {
 	// Description of workout
 	Body string `json:"body"`
 	// Timestamp of the last time completed
-	LastTotalVolume time.Time `json:"last_total_volume"`
+	LastTime time.Time `json:"last_time"`
 }

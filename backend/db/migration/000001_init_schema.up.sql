@@ -12,7 +12,7 @@ CREATE TABLE "workouts" (
   "user_id" bigserial NOT NULL,
   "title" varchar NOT NULL,
   "body" text NOT NULL,
-  "last_total_volume" timestamp NOT NULL
+  "last_time" timestamp NOT NULL
 );
 
 CREATE TABLE "exercises" (
@@ -42,7 +42,7 @@ COMMENT ON COLUMN "users"."email" IS 'email to sign in - also to send reminders'
 
 COMMENT ON COLUMN "workouts"."body" IS 'Description of workout';
 
-COMMENT ON COLUMN "workouts"."last_total_volume" IS 'Timestamp of the last time completed';
+COMMENT ON COLUMN "workouts"."last_time" IS 'Timestamp of the last time completed';
 
 COMMENT ON COLUMN "exercises"."type" IS 'The body section this exercise hits - chest, back, etc.';
 
