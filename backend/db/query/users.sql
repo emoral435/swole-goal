@@ -33,10 +33,7 @@ WHERE email = $1 LIMIT 1;
 -- returns: all users
 -- name: ListUsers :many
 SELECT * FROM "users"
-ORDER BY id
-LIMIT
-    1
-    OFFSET 2;
+ORDER BY id;
 
 -- UpdatePassword: updates user's password given their uid
 --
@@ -81,6 +78,15 @@ RETURNING *;
 UPDATE "users"
 SET birthday = $2
 WHERE id = $1
+RETURNING *;
+
+-- UpdateEmail: updates user's email (if it is a new, unqiue email) given their uid
+--
+-- returns: the user's new corresponding row
+-- name: UpdateEmail :one
+UPDATE "users"
+SET email = $2
+WHERE users.id = $1 AND $2 NOT IN (SELECT email FROM "users")
 RETURNING *;
 
 

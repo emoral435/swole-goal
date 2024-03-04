@@ -101,9 +101,6 @@ func (q *Queries) GetUserEmail(ctx context.Context, email string) (User, error) 
 const listUsers = `-- name: ListUsers :many
 SELECT id, email, password, username, created_at, birthday FROM "users"
 ORDER BY id
-LIMIT
-    1
-    OFFSET 2
 `
 
 // ListUsers: returns all users in the database
@@ -170,6 +167,35 @@ type UpdateBirthdayParams struct {
 // returns: the user's new corresponding row
 func (q *Queries) UpdateBirthday(ctx context.Context, arg UpdateBirthdayParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, updateBirthday, arg.ID, arg.Birthday)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.Username,
+		&i.CreatedAt,
+		&i.Birthday,
+	)
+	return i, err
+}
+
+const updateEmail = `-- name: UpdateEmail :one
+UPDATE "users"
+SET email = $2
+WHERE users.id = $1 AND $2 NOT IN (SELECT email FROM "users")
+RETURNING id, email, password, username, created_at, birthday
+`
+
+type UpdateEmailParams struct {
+	ID    int64  `json:"id"`
+	Email string `json:"email"`
+}
+
+// UpdateEmail: updates user's email (if it is a new, unqiue email) given their uid
+//
+// returns: the user's new corresponding row
+func (q *Queries) UpdateEmail(ctx context.Context, arg UpdateEmailParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateEmail, arg.ID, arg.Email)
 	var i User
 	err := row.Scan(
 		&i.ID,
