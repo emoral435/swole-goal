@@ -7,13 +7,14 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO "users" (
-  email, password, username
+    email, password, username
 ) VALUES (
-  $1, $2, $3
+    $1, $2, $3
 ) RETURNING id, email, password, username, created_at, birthday
 `
 
@@ -23,6 +24,9 @@ type CreateUserParams struct {
 	Username string `json:"username"`
 }
 
+// CreateUser: returns a new user, provided their email, password, and username
+//
+// returns: the new user row
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, createUser, arg.Email, arg.Password, arg.Username)
 	var i User
@@ -37,23 +41,51 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
-const deleteUsers = `-- name: DeleteUsers :exec
+const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM "users"
 WHERE id = $1
 `
 
-func (q *Queries) DeleteUsers(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteUsers, id)
+// DeleteUser: deletes a user given their uid
+//
+// returns: nothing! see https://docs.sqlc.dev/en/stable/reference/query-annotations.html for exec
+func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
 }
 
-const getUsers = `-- name: GetUsers :one
-SELECT id, email, password, username, created_at, birthday from "users"
+const getUser = `-- name: GetUser :one
+SELECT id, email, password, username, created_at, birthday FROM "users"
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetUsers(ctx context.Context, id int64) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUsers, id)
+// GetUser: returns a new user, provided their uid
+//
+// returns: the user's corresponding row
+func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.Username,
+		&i.CreatedAt,
+		&i.Birthday,
+	)
+	return i, err
+}
+
+const getUserEmail = `-- name: GetUserEmail :one
+SELECT id, email, password, username, created_at, birthday FROM "users"
+WHERE email = $1 LIMIT 1
+`
+
+// GetUserEmail: returns an existing user, given their unique email
+//
+// returns: the user's corresponding row
+func (q *Queries) GetUserEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserEmail, email)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -69,10 +101,11 @@ func (q *Queries) GetUsers(ctx context.Context, id int64) (User, error) {
 const listUsers = `-- name: ListUsers :many
 SELECT id, email, password, username, created_at, birthday FROM "users"
 ORDER BY id
-LIMIT 1
-OFFSET 2
 `
 
+// ListUsers: returns all users in the database
+//
+// returns: all users
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	rows, err := q.db.QueryContext(ctx, listUsers)
 	if err != nil {
@@ -103,20 +136,182 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
-const updateUsers = `-- name: UpdateUsers :one
+const numUsers = `-- name: NumUsers :one
+SELECT COUNT(*) FROM "users"
+`
+
+// NumUsers: returns the number of users
+//
+// returns: the number of users
+func (q *Queries) NumUsers(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, numUsers)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const updateBirthday = `-- name: UpdateBirthday :one
+UPDATE "users"
+SET birthday = $2
+WHERE id = $1
+RETURNING id, email, password, username, created_at, birthday
+`
+
+type UpdateBirthdayParams struct {
+	ID       int64        `json:"id"`
+	Birthday sql.NullTime `json:"birthday"`
+}
+
+// UpdateBirthday: updates user's birthday given their uid
+//
+// returns: the user's new corresponding row
+func (q *Queries) UpdateBirthday(ctx context.Context, arg UpdateBirthdayParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateBirthday, arg.ID, arg.Birthday)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.Username,
+		&i.CreatedAt,
+		&i.Birthday,
+	)
+	return i, err
+}
+
+const updateEmail = `-- name: UpdateEmail :one
+UPDATE "users"
+SET email = $2
+WHERE users.id = $1 AND $2 NOT IN (SELECT email FROM "users")
+RETURNING id, email, password, username, created_at, birthday
+`
+
+type UpdateEmailParams struct {
+	ID    int64  `json:"id"`
+	Email string `json:"email"`
+}
+
+// UpdateEmail: updates user's email (if it is a new, unqiue email) given their uid
+//
+// returns: the user's new corresponding row
+func (q *Queries) UpdateEmail(ctx context.Context, arg UpdateEmailParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateEmail, arg.ID, arg.Email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.Username,
+		&i.CreatedAt,
+		&i.Birthday,
+	)
+	return i, err
+}
+
+const updatePassword = `-- name: UpdatePassword :one
 UPDATE "users"
 SET password = $2
 WHERE id = $1
 RETURNING id, email, password, username, created_at, birthday
 `
 
-type UpdateUsersParams struct {
+type UpdatePasswordParams struct {
 	ID       int64  `json:"id"`
 	Password string `json:"password"`
 }
 
-func (q *Queries) UpdateUsers(ctx context.Context, arg UpdateUsersParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUsers, arg.ID, arg.Password)
+// UpdatePassword: updates user's password given their uid
+//
+// returns: the user's new corresponding row
+func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updatePassword, arg.ID, arg.Password)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.Username,
+		&i.CreatedAt,
+		&i.Birthday,
+	)
+	return i, err
+}
+
+const updatePasswordEmail = `-- name: UpdatePasswordEmail :one
+UPDATE "users"
+SET password = $2
+WHERE email = $1
+RETURNING id, email, password, username, created_at, birthday
+`
+
+type UpdatePasswordEmailParams struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// UpdatePasswordEmail: updates user's password given their email
+//
+// returns: the user's new corresponding row
+func (q *Queries) UpdatePasswordEmail(ctx context.Context, arg UpdatePasswordEmailParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updatePasswordEmail, arg.Email, arg.Password)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.Username,
+		&i.CreatedAt,
+		&i.Birthday,
+	)
+	return i, err
+}
+
+const updateUsername = `-- name: UpdateUsername :one
+UPDATE "users"
+SET username = $2
+WHERE id = $1
+RETURNING id, email, password, username, created_at, birthday
+`
+
+type UpdateUsernameParams struct {
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+}
+
+// UpdateUsername: updates user's username given their uid
+//
+// returns: the user's new corresponding row
+func (q *Queries) UpdateUsername(ctx context.Context, arg UpdateUsernameParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUsername, arg.ID, arg.Username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.Username,
+		&i.CreatedAt,
+		&i.Birthday,
+	)
+	return i, err
+}
+
+const updateUsernameEmail = `-- name: UpdateUsernameEmail :one
+UPDATE "users"
+SET username = $2
+WHERE email = $1
+RETURNING id, email, password, username, created_at, birthday
+`
+
+type UpdateUsernameEmailParams struct {
+	Email    string `json:"email"`
+	Username string `json:"username"`
+}
+
+// UpdateUsernameEmail: updates user's username given their email
+//
+// returns: the user's new corresponding row
+func (q *Queries) UpdateUsernameEmail(ctx context.Context, arg UpdateUsernameEmailParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUsernameEmail, arg.Email, arg.Username)
 	var i User
 	err := row.Scan(
 		&i.ID,
