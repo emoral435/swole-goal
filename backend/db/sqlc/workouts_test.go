@@ -93,10 +93,11 @@ func TestDeleteAllWorkouts(t *testing.T) {
 		return
 	}
 
-	testQueries.DeleteAllWorkouts(context.Background(), user.ID)
+	err3 := testQueries.DeleteAllWorkouts(context.Background(), user.ID)
 	checkWorkout, err := testQueries.GetUserWorkouts(context.Background(), user.ID)
 
 	require.NoError(t, err)
+	require.NoError(t, err3)
 	require.Equal(t, len(checkWorkout), 0)
 }
 
@@ -117,10 +118,11 @@ func TestDeleteSingleWorkout(t *testing.T) {
 		return
 	}
 
-	testQueries.DeleteSingleWorkout(context.Background(), workout1.ID)
+	err3 := testQueries.DeleteSingleWorkout(context.Background(), workout1.ID)
 	checkWorkout, err := testQueries.GetUserWorkouts(context.Background(), user.ID)
 
 	require.NoError(t, err)
+	require.NoError(t, err3)
 	require.Equal(t, len(checkWorkout), 1)
 }
 
