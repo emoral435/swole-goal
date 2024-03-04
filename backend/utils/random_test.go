@@ -7,7 +7,7 @@ import (
 )
 
 // as testing randomness doesn't make sense, this is mainly here to have full test coverage in our console
-func TestCoverage(t *testing.T) {
+func TestRandomUtils(t *testing.T) {
 	s1 := RandomEmail(10)
 	n1 := RandomInt(0, 64)
 	s2 := RandomPassword(10)

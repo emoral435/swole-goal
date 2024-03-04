@@ -17,15 +17,16 @@ type Exercise struct {
 	// What is the exercise called?
 	Title string `json:"title"`
 	// description of the exercies - good for reminders
-	Desc    sql.NullString `json:"desc"`
-	Set1    sql.NullInt64  `json:"set1"`
-	Weight1 sql.NullInt64  `json:"weight1"`
-	Set2    sql.NullInt64  `json:"set2"`
-	Weight2 sql.NullInt64  `json:"weight2"`
-	Set3    sql.NullInt64  `json:"set3"`
-	Weight3 sql.NullInt64  `json:"weight3"`
-	Set4    sql.NullInt64  `json:"set4"`
-	Weight4 sql.NullInt64  `json:"weight4"`
+	Desc sql.NullString `json:"desc"`
+	// tracks what the overall volume was the last time this exercise was performed
+	LastVolume int64 `json:"last_volume"`
+}
+
+type Set struct {
+	ID         int64         `json:"id"`
+	ExerciseID int64         `json:"exercise_id"`
+	Reps       sql.NullInt64 `json:"reps"`
+	Weight     sql.NullInt64 `json:"weight"`
 	// tracks what the overall volume was the last time this exercise was performed
 	LastVolume int64 `json:"last_volume"`
 }
@@ -47,12 +48,5 @@ type Workout struct {
 	// Description of workout
 	Body string `json:"body"`
 	// Timestamp of the last time completed
-	Last time.Time     `json:"last"`
-	Exe1 sql.NullInt64 `json:"exe1"`
-	Exe2 sql.NullInt64 `json:"exe2"`
-	Exe3 sql.NullInt64 `json:"exe3"`
-	Exe4 sql.NullInt64 `json:"exe4"`
-	Exe5 sql.NullInt64 `json:"exe5"`
-	Exe6 sql.NullInt64 `json:"exe6"`
-	Exe7 sql.NullInt64 `json:"exe7"`
+	LastTotalVolume time.Time `json:"last_total_volume"`
 }

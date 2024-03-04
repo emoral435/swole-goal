@@ -3,9 +3,9 @@
 -- returns: the new workout row
 -- name: CreateWorkout :one
 INSERT INTO "workouts" (
-    user_id, title, body, last
+    user_id, title, body, last_total_volume
 ) VALUES (
-    (SELECT id FROM "users" WHERE id = $1), $2, $3, $4
+    (SELECT users.id FROM "users" WHERE users.id = $1), $2, $3, $4
 ) RETURNING *;
 
 -- GetUserWorkouts: returns a users workouts, provided their uid
@@ -13,12 +13,12 @@ INSERT INTO "workouts" (
 -- returns: the user's corresponding workout rows
 -- name: GetUserWorkouts :many
 SELECT * FROM "workouts"
-WHERE uid = $1;
+WHERE user_id = $1;
 
 -- GetWorkout: returns an existing workout, given workout id
 --
 -- returns: the corresponding workout row
--- name: GetUserEmail :one
+-- name: GetWorkout :one
 SELECT * FROM "workouts"
 WHERE id = $1 LIMIT 1;
 
@@ -45,7 +45,7 @@ RETURNING *;
 -- returns: the workout's new corresponding row
 -- name: UpdateLastWorkout :one
 UPDATE "workouts"
-SET last = $2
+SET last_total_volume = $2
 WHERE id = $1
 RETURNING *;
 
