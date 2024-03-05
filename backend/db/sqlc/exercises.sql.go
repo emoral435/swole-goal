@@ -76,6 +76,28 @@ func (q *Queries) DeleteSingleExercise(ctx context.Context, id int64) error {
 	return err
 }
 
+const getExercise = `-- name: GetExercise :one
+SELECT id, workout_id, type, title, description, last_volume FROM "exercises"
+WHERE id = $1 LIMIT 1
+`
+
+// GetExercise: returns an existing exercise, given exercise id
+//
+// returns: the corresponding exercise row
+func (q *Queries) GetExercise(ctx context.Context, id int64) (Exercise, error) {
+	row := q.db.QueryRowContext(ctx, getExercise, id)
+	var i Exercise
+	err := row.Scan(
+		&i.ID,
+		&i.WorkoutID,
+		&i.Type,
+		&i.Title,
+		&i.Description,
+		&i.LastVolume,
+	)
+	return i, err
+}
+
 const getWorkoutsExercise = `-- name: GetWorkoutsExercise :many
 SELECT id, workout_id, type, title, description, last_volume FROM "exercises"
 WHERE workout_id = $1
@@ -112,28 +134,6 @@ func (q *Queries) GetWorkoutsExercise(ctx context.Context, workoutID int64) ([]E
 		return nil, err
 	}
 	return items, nil
-}
-
-const getexercise = `-- name: Getexercise :one
-SELECT id, workout_id, type, title, description, last_volume FROM "exercises"
-WHERE id = $1 LIMIT 1
-`
-
-// Getexercise: returns an existing exercise, given exercise id
-//
-// returns: the corresponding exercise row
-func (q *Queries) Getexercise(ctx context.Context, id int64) (Exercise, error) {
-	row := q.db.QueryRowContext(ctx, getexercise, id)
-	var i Exercise
-	err := row.Scan(
-		&i.ID,
-		&i.WorkoutID,
-		&i.Type,
-		&i.Title,
-		&i.Description,
-		&i.LastVolume,
-	)
-	return i, err
 }
 
 const updateExerciseDescription = `-- name: UpdateExerciseDescription :one
@@ -211,6 +211,35 @@ type UpdateExerciseTitleParams struct {
 // returns: the exercise's new corresponding row
 func (q *Queries) UpdateExerciseTitle(ctx context.Context, arg UpdateExerciseTitleParams) (Exercise, error) {
 	row := q.db.QueryRowContext(ctx, updateExerciseTitle, arg.ID, arg.Title)
+	var i Exercise
+	err := row.Scan(
+		&i.ID,
+		&i.WorkoutID,
+		&i.Type,
+		&i.Title,
+		&i.Description,
+		&i.LastVolume,
+	)
+	return i, err
+}
+
+const updateExerciseType = `-- name: UpdateExerciseType :one
+UPDATE "exercises"
+SET type = $2
+WHERE id = $1
+RETURNING id, workout_id, type, title, description, last_volume
+`
+
+type UpdateExerciseTypeParams struct {
+	ID   int64  `json:"id"`
+	Type string `json:"type"`
+}
+
+// UpdateExerciseType: updates exercises type given its id
+//
+// returns: the exercise's new corresponding row
+func (q *Queries) UpdateExerciseType(ctx context.Context, arg UpdateExerciseTypeParams) (Exercise, error) {
+	row := q.db.QueryRowContext(ctx, updateExerciseType, arg.ID, arg.Type)
 	var i Exercise
 	err := row.Scan(
 		&i.ID,
