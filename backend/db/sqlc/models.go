@@ -17,7 +17,7 @@ type Exercise struct {
 	// What is the exercise called?
 	Title string `json:"title"`
 	// description of the exercies - good for reminders
-	Desc sql.NullString `json:"desc"`
+	Description sql.NullString `json:"description"`
 	// tracks what the overall volume was the last time this exercise was performed
 	LastVolume int64 `json:"last_volume"`
 }
@@ -27,8 +27,6 @@ type Set struct {
 	ExerciseID int64         `json:"exercise_id"`
 	Reps       sql.NullInt64 `json:"reps"`
 	Weight     sql.NullInt64 `json:"weight"`
-	// tracks what the overall volume was the last time this exercise was performed
-	LastVolume int64 `json:"last_volume"`
 }
 
 type User struct {
