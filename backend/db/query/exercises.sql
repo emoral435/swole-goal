@@ -16,10 +16,10 @@ INSERT INTO "exercises" (
 SELECT * FROM "exercises"
 WHERE workout_id = $1;
 
--- Getexercise: returns an existing exercise, given exercise id
+-- GetExercise: returns an existing exercise, given exercise id
 --
 -- returns: the corresponding exercise row
--- name: Getexercise :one
+-- name: GetExercise :one
 SELECT * FROM "exercises"
 WHERE id = $1 LIMIT 1;
 
