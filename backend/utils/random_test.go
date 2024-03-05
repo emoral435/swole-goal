@@ -13,9 +13,11 @@ func TestRandomUtils(t *testing.T) {
 	s2 := RandomPassword(10)
 	s3 := RandomString(10)
 	s4 := RandomUsername(10)
+	sNull := RandomStringNull(10)
 	require.Equal(t, s1, s1)
 	require.Equal(t, s2, s2)
 	require.Equal(t, s3, s3)
 	require.Equal(t, s4, s4)
+	require.Equal(t, sNull.String, sNull.String)
 	require.Equal(t, n1, n1)
 }

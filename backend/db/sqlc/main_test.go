@@ -35,11 +35,25 @@ func CreateWorkoutParam(uid int64, t string, b string, ltv time.Time) *CreateWor
 	return &CreateWorkoutParams{ID: uid, Title: t, Body: b, LastTime: ltv}
 }
 
-// GenRandWorkout: generates random user parameters (email, password, username)
+// GenRandWorkout: generates random workouts parameters
 //
-// returns: a CreateUserParams object with random values (email, password, username)
+// returns: a CreateUserParams object with random values
 func GenRandWorkout(uid int64) *CreateWorkoutParams {
 	return CreateWorkoutParam(uid, util.RandomString(12), util.RandomString(12), time.Now())
+}
+
+// CreateExerciseParam: generates a user parameters
+//
+// returns: a CreateExerciseParams object with specified parameters
+func CreateExerciseParam(uid int64, t string, d sql.NullString, ltv int64) *CreateExerciseParams {
+	return &CreateExerciseParams{ID: uid, Type: t, Description: d, LastVolume: ltv}
+}
+
+// GenRandExercise: generates random user parameters
+//
+// returns: a CreateUserParams object with random values
+func GenRandExercise(uid int64) *CreateExerciseParams {
+	return CreateExerciseParam(uid, util.RandomString(12), util.RandomStringNull(12), util.RandomInt(0, 10))
 }
 
 // drivers to connect to databse to check

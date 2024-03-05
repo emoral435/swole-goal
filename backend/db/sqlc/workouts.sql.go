@@ -25,7 +25,7 @@ type CreateWorkoutParams struct {
 	LastTime time.Time `json:"last_time"`
 }
 
-// CreateWorkout: returns a new workout, provided their email, password, and username
+// CreateWorkout: returns a new workout, provided uid, title, body, and last time modified/used
 //
 // returns: the new workout row
 func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (Workout, error) {
@@ -144,7 +144,7 @@ type UpdateWorkoutBodyParams struct {
 
 // UpdateBody: updates workout's body text given its workouts id
 //
-// returns: the workouts
+// returns: the workouts new row
 func (q *Queries) UpdateWorkoutBody(ctx context.Context, arg UpdateWorkoutBodyParams) (Workout, error) {
 	row := q.db.QueryRowContext(ctx, updateWorkoutBody, arg.ID, arg.Body)
 	var i Workout
@@ -198,7 +198,7 @@ type UpdateWorkoutTitleParams struct {
 	Title string `json:"title"`
 }
 
-// UpdateTitle: updates workouts title given its id
+// UpdateWorkoutTitle: updates workouts title given its id
 //
 // returns: the workout's new corresponding row
 func (q *Queries) UpdateWorkoutTitle(ctx context.Context, arg UpdateWorkoutTitleParams) (Workout, error) {
