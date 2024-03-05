@@ -2,6 +2,7 @@
 package util
 
 import (
+	"database/sql"
 	"math/rand"
 	"strings"
 )
@@ -30,6 +31,26 @@ func RandomString(n int) string {
 
 	// return the string that we just built
 	return sb.String()
+}
+
+// RandomStringNull: generates a random string of length n that can be null
+//
+// returns: string of length n
+func RandomStringNull(n int) sql.NullString {
+	var sb strings.Builder
+	k := len(alphabet)
+
+	// for i in range n, write a randome character
+	for i := 0; i < n; i++ {
+		c := alphabet[rand.Intn(k)]
+		sb.WriteByte(c)
+	}
+
+	// return the string that we just built
+	return sql.NullString{
+		String: sb.String(),
+		Valid:  true,
+	}
 }
 
 // RandomEmail: generates a random email of length n + "@gmail.com"

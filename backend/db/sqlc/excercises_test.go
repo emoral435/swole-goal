@@ -7,27 +7,37 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestCreateWorkout: tests CreateWorkout methods
+// TestCreateExercise: tests CreateExercise methods
 //
 // requires: GetUserWorkouts
 func TestCreateExercise(t *testing.T) {
-	arg := GenRandUser()
-	user, err := testQueries.CreateUser(context.Background(), *arg)
-	if err != nil {
-		return
-	}
-	newWorkout := GenRandWorkout(user.ID)
-	workout, err := testQueries.CreateWorkout(context.Background(), *newWorkout)
-	// if query failed
+	TestCreateWorkout(t)
+	newExercise := GenRandExercise(1)
+	exeRow, err := testQueries.CreateExercise(context.Background(), *newExercise)
+
 	require.NoError(t, err)
-	require.NotEmpty(t, workout)
+	require.Equal(t, newExercise.Title, exeRow.Title)
+	require.Equal(t, newExercise.Description, exeRow.Description)
+	require.Equal(t, newExercise.LastVolume, exeRow.LastVolume)
+	require.Equal(t, int64(1), exeRow.WorkoutID)
+}
 
-	// checking the new user has the correct values in the table
-	require.Equal(t, workout.UserID, user.ID)
+// TestDeleteAllExercises: tests DeleteAllExercises methods
+//
+// requires: GetUserWorkouts
+func TestDeleteAllExercises(t *testing.T) {
+	TestCreateExercise(t)
+	err := testQueries.DeleteAllExercises(context.Background(), 64)
 
-	checkWorkout, err := testQueries.GetUserWorkouts(context.Background(), user.ID)
 	require.NoError(t, err)
-	require.NotEmpty(t, checkWorkout)
+}
 
-	require.Equal(t, workout.ID, checkWorkout[0].ID)
+// TestDeleteSingleExercise: tests DeleteSingleExercise methods
+//
+// requires: GetUserWorkouts
+func TestDeleteSingleExercise(t *testing.T) {
+	TestCreateExercise(t)
+	err := testQueries.DeleteSingleExercise(context.Background(), 1)
+
+	require.NoError(t, err)
 }
