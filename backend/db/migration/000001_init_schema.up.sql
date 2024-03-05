@@ -20,7 +20,7 @@ CREATE TABLE "exercises" (
   "workout_id" bigserial NOT NULL,
   "type" varchar NOT NULL,
   "title" varchar NOT NULL,
-  "desc" text,
+  "description" text,
   "last_volume" bigint NOT NULL DEFAULT 0
 );
 
@@ -28,8 +28,7 @@ CREATE TABLE "set" (
   "id" bigserial PRIMARY KEY NOT NULL,
   "exercise_id" bigserial NOT NULL,
   "reps" bigint,
-  "weight" bigint,
-  "last_volume" bigint NOT NULL DEFAULT 0
+  "weight" bigint
 );
 
 CREATE INDEX ON "users" ("email");
@@ -48,11 +47,9 @@ COMMENT ON COLUMN "exercises"."type" IS 'The body section this exercise hits - c
 
 COMMENT ON COLUMN "exercises"."title" IS 'What is the exercise called?';
 
-COMMENT ON COLUMN "exercises"."desc" IS 'description of the exercies - good for reminders';
+COMMENT ON COLUMN "exercises"."description" IS 'description of the exercies - good for reminders';
 
 COMMENT ON COLUMN "exercises"."last_volume" IS 'tracks what the overall volume was the last time this exercise was performed';
-
-COMMENT ON COLUMN "set"."last_volume" IS 'tracks what the overall volume was the last time this exercise was performed';
 
 ALTER TABLE "workouts" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 

@@ -1,4 +1,4 @@
--- CreateWorkout: returns a new workout, provided their email, password, and username
+-- CreateWorkout: returns a new workout, provided uid, title, body, and last time modified/used
 --
 -- returns: the new workout row
 -- name: CreateWorkout :one
@@ -22,7 +22,7 @@ WHERE user_id = $1;
 SELECT * FROM "workouts"
 WHERE id = $1 LIMIT 1;
 
--- UpdateTitle: updates workouts title given its id
+-- UpdateWorkoutTitle: updates workouts title given its id
 --
 -- returns: the workout's new corresponding row
 -- name: UpdateWorkoutTitle :one
@@ -33,7 +33,7 @@ RETURNING *;
 
 -- UpdateBody: updates workout's body text given its workouts id
 --
--- returns: the workouts
+-- returns: the workouts new row
 -- name: UpdateWorkoutBody :one
 UPDATE "workouts"
 SET body = $2
