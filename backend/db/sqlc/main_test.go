@@ -56,19 +56,19 @@ func GenRandExercise(uid int64) *CreateExerciseParams {
 	return CreateExerciseParam(uid, util.RandomString(12), util.RandomStringNull(12), util.RandomInt(0, 10))
 }
 
-// drivers to connect to databse to check
-const (
-	dbDriver = "postgres"
-	// NOTE this is used for dev environments
-	// dbSource = "postgresql://root:secret@host.docker.internal:5432/swole_goal?sslmode=disable"
-	dbSource = "postgresql://root:secret@localhost:5432/swole_goal?sslmode=disable"
-)
-
 // TestMain: the main test driver. Opens the local database, generates the queries, then runs each test
 //
 // returns: nothing
 func TestMain(m *testing.M) {
-	conn, err := sql.Open(dbDriver, dbSource)
+	config, err := util.LoadConfig("../..")
+
+	if err != nil {
+		log.Fatal("Cannot load env: ", err)
+		return
+	}
+
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
+
 	if err != nil {
 		log.Fatal("Cannot connect to database: ", err)
 	}
