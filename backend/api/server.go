@@ -3,7 +3,6 @@ package server
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/emoral435/swole-goal/api/routes"
@@ -24,13 +23,25 @@ func Serve(connection *sql.DB) {
 	fmt.Println("Server started!")
 	// starts the server
 	if err := http.ListenAndServe("localhost:9090", muxRouter); err != nil {
-		log.Fatalf("We recieved and error: %s", err.Error())
+		fmt.Printf("Something went wrong!")
+		return
 	}
 }
 
 func serveRoutes(mux *http.ServeMux, store *db.Store) {
-	// creates a user
-	mux.HandleFunc("POST /user", func(write http.ResponseWriter, read *http.Request) {
-		routes.CreateUser(write, read, store)
+	// just for me hehe
+	mux.HandleFunc("GET /", func(res http.ResponseWriter, req *http.Request) {
+		res.Write([]byte("Server started."))
+	})
+
+	// creates a user using http headers
+	mux.HandleFunc("POST /user", func(res http.ResponseWriter, req *http.Request) {
+		routes.CreateUser(res, req, store)
+	})
+
+	// gets a single user
+	mux.HandleFunc("GET /user/{id}", func(res http.ResponseWriter, req *http.Request) {
+		fmt.Fprintf(res, "server hath started")
+		fmt.Fprintf(res, "server hath started, with an id of %s", req.PathValue("id"))
 	})
 }

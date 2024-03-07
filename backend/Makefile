@@ -59,6 +59,10 @@ godoc:
 	@ echo 'http://localhost:9090/pkg/'
 	godoc -http :9090
 
+# runs the server
+server:
+	@ go run main.go
+
 # this tells the makefile that these commands are not related to any files in particular - so makefile does not get confused
 # https://stackoverflow.com/a/2145605/19919302
 .PHONY: createdb postgres dropdb migrateup migratedown sqlc golint sqlint
