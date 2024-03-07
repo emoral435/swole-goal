@@ -7,12 +7,13 @@ import (
 
 	"github.com/emoral435/swole-goal/api/routes"
 	db "github.com/emoral435/swole-goal/db/sqlc"
+	util "github.com/emoral435/swole-goal/utils"
 )
 
 // Serve serves the API for our application
 //
 // defines the server muxiplexer interface, and using package router, defines routes and handlers
-func Serve(connection *sql.DB) {
+func Serve(connection *sql.DB, config util.Config) {
 	muxRouter := http.NewServeMux()
 
 	store := db.NewStore(connection)
@@ -22,7 +23,7 @@ func Serve(connection *sql.DB) {
 
 	fmt.Println("Server started!")
 	// starts the server
-	if err := http.ListenAndServe("localhost:9090", muxRouter); err != nil {
+	if err := http.ListenAndServe(config.ServerAddress, muxRouter); err != nil {
 		fmt.Printf("Something went wrong!")
 		return
 	}

@@ -29,5 +29,5 @@ func main() {
 	}
 
 	// serve our api with our database connection
-	server.Serve(conn)
+	server.Serve(conn, config)
 }

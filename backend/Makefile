@@ -5,7 +5,7 @@ DB_URL=postgresql://root:secret@localhost:5432/swole_goal?sslmode=disable
 # this stack overflow quesiton will guide you well -> https://stackoverflow.com/a/63007311/19919302
 # PERMANENT FIX: check to see if postgres runs on start on windows. if it does, disable that, and see if the problemn persists.
 build_postgres: # builds the postgres container, with these settings
-	docker run --name postgres16 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16.2-alpine3.19
+	docker run --name postgres16 --network swole-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16.2-alpine3.19
 
 start_postgres: # starts the postgres container
 	docker start postgres16
