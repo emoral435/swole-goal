@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16.2-alpine3.19
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=swole_goal
+    ports:
+      - "5432:5432"
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "9090:9090"
+    environment:
+      - DB_SOURCE=postgresql://root:secret@postgres:5432/swole_goal?sslmode=disable
+    depends_on:
+      - postgres
+    entrypoint: [ "/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh" ]
+    command: [ "/app/main" ]
