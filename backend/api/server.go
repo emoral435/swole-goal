@@ -31,7 +31,7 @@ func Serve(connection *sql.DB) {
 func serveRoutes(mux *http.ServeMux, store *db.Store) {
 	// just for me hehe
 	mux.HandleFunc("GET /", func(res http.ResponseWriter, req *http.Request) {
-		res.Write([]byte("Server started."))
+		fmt.Fprintf(res, "server hath started")
 	})
 
 	// creates a user using http headers
@@ -41,7 +41,6 @@ func serveRoutes(mux *http.ServeMux, store *db.Store) {
 
 	// gets a single user
 	mux.HandleFunc("GET /user/{id}", func(res http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(res, "server hath started")
 		fmt.Fprintf(res, "server hath started, with an id of %s", req.PathValue("id"))
 	})
 }

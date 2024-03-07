@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 
 	db "github.com/emoral435/swole-goal/db/sqlc"
@@ -18,6 +19,6 @@ func CreateUser(res http.ResponseWriter, req *http.Request, store *db.Store) {
 
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte("Email already in use."))
+		fmt.Fprintf(res, "Email already in use.")
 	}
 }
