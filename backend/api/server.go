@@ -49,9 +49,9 @@ func serveRoutes(mux *http.ServeMux, store *db.Store) {
 		routes.GetUserFromID(res, req, store)
 	})
 
-	// gets a user using their id
+	// gets a user using their email
 	mux.HandleFunc("GET /user/email/{email}", func(res http.ResponseWriter, req *http.Request) {
-		routes.CreateUser(res, req, store)
+		routes.GetUserFromEmail(res, req, store)
 	})
 
 	// deletes a single user

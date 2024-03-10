@@ -57,6 +57,24 @@ func GetUserFromID(res http.ResponseWriter, req *http.Request, store *db.Store) 
 	json.NewEncoder(res).Encode(user)
 }
 
+// GetUserFromEmail returns user from the given email path string
+func GetUserFromEmail(res http.ResponseWriter, req *http.Request, store *db.Store) {
+	res.Header().Set("Content-Type", "application/json")
+	// get the email query from URL
+	email := req.PathValue("email")
+
+	user, err := store.GetUserEmail(req.Context(), email)
+
+	// check if we got the user successfully
+	if err = util.CheckError(err, res, req); err != nil {
+		return
+	}
+
+	// send back the correct response
+	res.WriteHeader(http.StatusOK)
+	json.NewEncoder(res).Encode(user)
+}
+
 func DeleteUser(res http.ResponseWriter, req *http.Request, store *db.Store, uid int64) {
 	res.Header().Set("Content-Type", "application/json")
 
