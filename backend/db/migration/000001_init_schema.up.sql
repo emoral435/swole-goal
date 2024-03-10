@@ -51,8 +51,8 @@ COMMENT ON COLUMN "exercises"."description" IS 'description of the exercies - go
 
 COMMENT ON COLUMN "exercises"."last_volume" IS 'tracks what the overall volume was the last time this exercise was performed';
 
-ALTER TABLE "workouts" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+ALTER TABLE "workouts" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "exercises" ADD FOREIGN KEY ("workout_id") REFERENCES "workouts" ("id");
+ALTER TABLE "exercises" ADD FOREIGN KEY ("workout_id") REFERENCES "workouts" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "set" ADD FOREIGN KEY ("exercise_id") REFERENCES "exercises" ("id");
+ALTER TABLE "set" ADD FOREIGN KEY ("exercise_id") REFERENCES "exercises" ("id") ON DELETE CASCADE;
