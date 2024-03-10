@@ -36,11 +36,21 @@ func serveRoutes(mux *http.ServeMux, store *db.Store) {
 	mux.HandleFunc("GET /", func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "application/json")
 		res.WriteHeader(http.StatusOK)
-		json.NewEncoder(res).Encode(util.ResponseMessage{Message: "Hello world!"})
+		json.NewEncoder(res).Encode(util.SuccessResponse{Message: "Hello world!", Status: http.StatusOK})
 	})
 
 	// creates a user using http headers
 	mux.HandleFunc("POST /user", func(res http.ResponseWriter, req *http.Request) {
+		routes.CreateUser(res, req, store)
+	})
+
+	// gets a user using their id
+	mux.HandleFunc("GET /user/id/{id}", func(res http.ResponseWriter, req *http.Request) {
+		routes.GetUserFromID(res, req, store)
+	})
+
+	// gets a user using their id
+	mux.HandleFunc("GET /user/email/{email}", func(res http.ResponseWriter, req *http.Request) {
 		routes.CreateUser(res, req, store)
 	})
 
