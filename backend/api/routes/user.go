@@ -9,6 +9,33 @@ import (
 	util "github.com/emoral435/swole-goal/utils"
 )
 
+func ServerUsers(mux *http.ServeMux, store *db.Store) {
+	// creates a user using http headers
+	mux.HandleFunc("POST /user", func(res http.ResponseWriter, req *http.Request) {
+		CreateUser(res, req, store)
+	})
+
+	// gets a user using their id
+	mux.HandleFunc("GET /user/id/{id}", func(res http.ResponseWriter, req *http.Request) {
+		GetUserFromID(res, req, store)
+	})
+
+	// gets a user using their email
+	mux.HandleFunc("GET /user/email/{email}", func(res http.ResponseWriter, req *http.Request) {
+		GetUserFromEmail(res, req, store)
+	})
+
+	// updates a users information, a user that correlates to their UID/email (probably will be using a form)
+	mux.HandleFunc("PUT /user/{id}", func(res http.ResponseWriter, req *http.Request) {
+		UpdateUserInfo(res, req, store)
+	})
+
+	// deletes a single user
+	mux.HandleFunc("DELETE /user/{id}", func(res http.ResponseWriter, req *http.Request) {
+		DeleteUser(res, req, store)
+	})
+}
+
 // CreateUser creates a new user, using their email, password, and username.
 //
 // This also stores their birthday and the time their account was created.
@@ -75,13 +102,40 @@ func GetUserFromEmail(res http.ResponseWriter, req *http.Request, store *db.Stor
 	json.NewEncoder(res).Encode(user)
 }
 
-func DeleteUser(res http.ResponseWriter, req *http.Request, store *db.Store, uid int64) {
+func UpdateUserInfo(res http.ResponseWriter, req *http.Request, store *db.Store) {
+	res.Header().Set("Content-Type", "application/json")
+	// get the id query from URL
+	id, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
+
+	// deal with bad request (query is invalid)
+	if err = util.CheckError(err, res, req); err != nil {
+		return
+	}
+
+	// what we need in the url query
+	arg := db.UpdatePasswordParams{
+		ID:       id,
+		Password: req.Header.Get("password"),
+	}
+
+	if len(arg.Password) > 0 {
+	}
+
+}
+
+// deletes a user, and all their information within the database
+//
+// this includes deleting their workouts, their exercises, and their sets
+func DeleteUser(res http.ResponseWriter, req *http.Request, store *db.Store) {
 	res.Header().Set("Content-Type", "application/json")
 
-	// get -> user -> all workouts -> all exercises -> all sets
-	// delete -> all sets -> all workouts -> all users
+	id, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
 
-	err := store.DeleteUser(req.Context(), uid)
+	if err = util.CheckError(err, res, req); err != nil {
+		return
+	}
+
+	err = store.DeleteUser(req.Context(), id)
 
 	if err = util.CheckError(err, res, req); err != nil {
 		return

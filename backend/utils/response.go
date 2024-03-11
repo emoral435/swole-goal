@@ -1,6 +1,7 @@
 package util
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 )
@@ -32,8 +33,13 @@ func CreateSuccessResponse(successMsg string, status int) *SuccessResponse {
 func CheckError(err error, res http.ResponseWriter, req *http.Request) error {
 	// deal with bad request (params for creating user not satisfied)
 	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(res).Encode(CreateErrorResponse(err.Error(), http.StatusBadRequest))
+		if err == sql.ErrNoRows {
+			res.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(res).Encode(CreateErrorResponse(err.Error(), http.StatusBadRequest))
+		}
+
+		res.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(res).Encode(CreateErrorResponse(err.Error(), http.StatusInternalServerError))
 		return err
 	}
 	return nil
