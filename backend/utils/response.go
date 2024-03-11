@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type ErrorResponse struct {
@@ -43,4 +45,18 @@ func CheckError(err error, res http.ResponseWriter, req *http.Request) error {
 		return err
 	}
 	return nil
+}
+
+func HashPassword(password string) (string, error) {
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(hashPassword), nil
+}
+
+func CompareHash(password string, hash string) error {
+	return bcrypt.CompareHashAndPassword([]byte(password), []byte(hash))
 }

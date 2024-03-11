@@ -42,10 +42,17 @@ func ServerUsers(mux *http.ServeMux, store *db.Store) {
 func CreateUser(res http.ResponseWriter, req *http.Request, store *db.Store) {
 	res.Header().Set("Content-Type", "application/json")
 
+	hashedPassword, err := util.HashPassword(req.Header.Get("password"))
+
+	// deal with bad request (params for creating user not satisfied)
+	if err = util.CheckError(err, res, req); err != nil {
+		return
+	}
+
 	// what we need in the header
 	arg := db.CreateUserParams{
 		Email:    req.Header.Get("email"),
-		Password: req.Header.Get("password"),
+		Password: hashedPassword,
 		Username: req.Header.Get("username"),
 	}
 
@@ -103,24 +110,47 @@ func GetUserFromEmail(res http.ResponseWriter, req *http.Request, store *db.Stor
 }
 
 func UpdateUserInfo(res http.ResponseWriter, req *http.Request, store *db.Store) {
-	res.Header().Set("Content-Type", "application/json")
-	// get the id query from URL
-	id, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
+	// res.Header().Set("Content-Type", "application/json")
+	// // get the id query from URL
+	// uid, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
 
-	// deal with bad request (query is invalid)
-	if err = util.CheckError(err, res, req); err != nil {
-		return
-	}
+	// // deal with bad request (query is invalid)
+	// if err = util.CheckError(err, res, req); err != nil {
+	// 	return
+	// }
 
+	// new user information
+	// newEmail := req.Header.Get("email")
+	// newPassword := req.Header.Get("password")
+	// newUsername := req.Header.Get("username")
+	// newBirthday := req.Header.Get("birthday")
+
+	// if len(newPassword) > 0 {
+	// 	UpdatePassword(res, req, store, newPassword, uid)
+	// }
+
+	// // what we need in the url query
+	// pswrdParams := db.UpdatePasswordParams{
+	// 	ID:       id,
+	// 	Password: req.Header.Get("password"),
+	// }
+
+	// bdayParams := db.UpdateBirthdayParams{
+	// 	ID:       id,
+	// 	Birthday: req.Header.Get("password"),
+	// }
+
+	// if len(arg.Password) > 0 {
+	// }
+
+}
+
+func UpdatePassword(res http.ResponseWriter, req *http.Request, store *db.Store, newPassowrd string, uid int64) {
 	// what we need in the url query
-	arg := db.UpdatePasswordParams{
-		ID:       id,
-		Password: req.Header.Get("password"),
-	}
-
-	if len(arg.Password) > 0 {
-	}
-
+	// pswrdParams := db.UpdatePasswordParams{
+	// 	ID:       id,
+	// 	Password: req.Header.Get("password"),
+	// }
 }
 
 // deletes a user, and all their information within the database
