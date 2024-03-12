@@ -5,41 +5,48 @@ import (
 	"net/http"
 	"strconv"
 
+	mw "github.com/emoral435/swole-goal/api/middleware"
 	db "github.com/emoral435/swole-goal/db/sqlc"
 	util "github.com/emoral435/swole-goal/utils"
 )
 
-func ServerUsers(mux *http.ServeMux, store *db.Store) {
+func ServerUsers(mux *http.ServeMux, serverStore *ServerStore) {
 	// creates a user using http headers
-	mux.HandleFunc("POST /user", func(res http.ResponseWriter, req *http.Request) {
-		CreateUser(res, req, store)
-	})
+	mux.Handle("POST /user", mw.EnforceJSONHandler(http.HandlerFunc(serverStore.CreateUser)))
 
 	// gets a user using their id
-	mux.HandleFunc("GET /user/id/{id}", func(res http.ResponseWriter, req *http.Request) {
-		GetUserFromID(res, req, store)
-	})
+	// mux.HandleFunc("GET /user/id/{id}", func(res http.ResponseWriter, req *http.Request) {
+	// 	GetUserFromID(res, req, store)
+	// })
 
-	// gets a user using their email
-	mux.HandleFunc("GET /user/email/{email}", func(res http.ResponseWriter, req *http.Request) {
-		GetUserFromEmail(res, req, store)
-	})
+	// // gets a user using their email
+	// mux.HandleFunc("GET /user/email/{email}", func(res http.ResponseWriter, req *http.Request) {
+	// 	GetUserFromEmail(res, req, store)
+	// })
 
-	// updates a users information, a user that correlates to their UID/email (probably will be using a form)
-	mux.HandleFunc("PUT /user/{id}", func(res http.ResponseWriter, req *http.Request) {
-		UpdateUserInfo(res, req, store)
-	})
+	// // updates a users information, a user that correlates to their UID/email (probably will be using a form)
+	// mux.HandleFunc("PUT /user/{id}", func(res http.ResponseWriter, req *http.Request) {
+	// 	UpdateUserInfo(res, req, store)
+	// })
 
-	// deletes a single user
-	mux.HandleFunc("DELETE /user/{id}", func(res http.ResponseWriter, req *http.Request) {
-		DeleteUser(res, req, store)
-	})
+	// finalUpdateUserHandler := http.HandlerFunc(UpdateUserInfo)
+	// mux.Handle("/", mw.EnforceJSONHandler(mw.AuthMiddleware(serverStore.TokenMaker, finalUpdateUserHandler)))
+
+	// // deletes a single user
+	// mux.HandleFunc("DELETE /user/{id}", func(res http.ResponseWriter, req *http.Request) {
+	// 	DeleteUser(res, req, store)
+	// })
+
+	// // handles the authentication of a user with their JWT token
+	// mux.HandleFunc("POST /user/login", func(res http.ResponseWriter, req *http.Request) {
+	// 	LoginUser(res, req, store, serverStore)
+	// })
 }
 
 // CreateUser creates a new user, using their email, password, and username.
 //
 // This also stores their birthday and the time their account was created.
-func CreateUser(res http.ResponseWriter, req *http.Request, store *db.Store) {
+func (ss *ServerStore) CreateUser(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "application/json")
 
 	hashedPassword, err := util.HashPassword(req.Header.Get("password"))
@@ -56,7 +63,7 @@ func CreateUser(res http.ResponseWriter, req *http.Request, store *db.Store) {
 		Username: req.Header.Get("username"),
 	}
 
-	user, err := store.CreateUser(req.Context(), arg)
+	user, err := ss.Store.CreateUser(req.Context(), arg)
 
 	// deal with bad request (params for creating user not satisfied)
 	if err = util.CheckError(err, res, req); err != nil {
@@ -173,4 +180,47 @@ func DeleteUser(res http.ResponseWriter, req *http.Request, store *db.Store) {
 
 	res.WriteHeader(http.StatusOK)
 	json.NewEncoder(res).Encode(util.CreateSuccessResponse("success", http.StatusOK))
+}
+
+// LoginUser returns the access token for the user, provided their email and password and if it is a valid email/password combination
+func LoginUser(res http.ResponseWriter, req *http.Request, store *db.Store, serverStore *ServerStore) {
+	res.Header().Set("Content-Type", "application/json")
+
+	user, err := store.GetUserEmail(req.Context(), req.Header.Get("email"))
+
+	// check if we got the user successfully
+	if err = util.CheckError(err, res, req); err != nil {
+		return
+	}
+
+	err = util.CompareHash(user.Password, req.Header.Get("password"))
+
+	// check if the hash correlation was successful
+	if err = util.CheckError(err, res, req); err != nil {
+		return
+	}
+
+	accessToken, err := serverStore.TokenMaker.CreateToken(
+		user.Email,
+		serverStore.Config.AccessTokenDuration,
+	)
+
+	// check if we got the user successfully
+	if err = util.CheckError(err, res, req); err != nil {
+		return
+	}
+
+	rsp := loginUserResponse{ // generates the response we want the client to recieve
+		AccessToken: accessToken,
+		User:        user,
+	}
+
+	// return user in the form of JSON
+	res.WriteHeader(http.StatusOK)
+	json.NewEncoder(res).Encode(rsp)
+}
+
+type loginUserResponse struct {
+	AccessToken string  `json:"access_token"`
+	User        db.User `json:"user"`
 }
