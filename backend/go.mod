@@ -13,8 +13,6 @@ require (
 )
 
 require (
-	aidanwoods.dev/go-paseto v1.5.1 // indirect
-	aidanwoods.dev/go-result v0.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
