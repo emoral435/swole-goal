@@ -10,14 +10,12 @@ import (
 	util "github.com/emoral435/swole-goal/utils"
 )
 
-func ServerUsers(mux *http.ServeMux, serverStore *ServerStore) {
+func ServerUsers(mux *http.ServeMux, ss *ServerStore) {
 	// creates a user using http headers
-	mux.Handle("POST /user", mw.EnforceJSONHandler(http.HandlerFunc(serverStore.CreateUser)))
+	mux.Handle("POST /user", mw.EnforceJSONHandler(http.HandlerFunc(ss.CreateUser)))
 
-	// gets a user using their id
-	// mux.HandleFunc("GET /user/id/{id}", func(res http.ResponseWriter, req *http.Request) {
-	// 	GetUserFromID(res, req, store)
-	// })
+	// gets a user by their id
+	mux.Handle("GET /user/id/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.GetUserFromID))))
 
 	// // gets a user using their email
 	// mux.HandleFunc("GET /user/email/{email}", func(res http.ResponseWriter, req *http.Request) {
@@ -38,16 +36,13 @@ func ServerUsers(mux *http.ServeMux, serverStore *ServerStore) {
 	// })
 
 	// // handles the authentication of a user with their JWT token
-	// mux.HandleFunc("POST /user/login", func(res http.ResponseWriter, req *http.Request) {
-	// 	LoginUser(res, req, store, serverStore)
-	// })
+	mux.HandleFunc("POST /user/login", ss.LoginUser)
 }
 
 // CreateUser creates a new user, using their email, password, and username.
 //
 // This also stores their birthday and the time their account was created.
 func (ss *ServerStore) CreateUser(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("Content-Type", "application/json")
 
 	hashedPassword, err := util.HashPassword(req.Header.Get("password"))
 
@@ -76,8 +71,8 @@ func (ss *ServerStore) CreateUser(res http.ResponseWriter, req *http.Request) {
 }
 
 // GetUserFromID returns user from the given ID string
-func GetUserFromID(res http.ResponseWriter, req *http.Request, store *db.Store) {
-	res.Header().Set("Content-Type", "application/json")
+func (ss *ServerStore) GetUserFromID(res http.ResponseWriter, req *http.Request) {
+
 	// get the id query from URL
 	id, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
 
@@ -86,7 +81,7 @@ func GetUserFromID(res http.ResponseWriter, req *http.Request, store *db.Store) 
 		return
 	}
 
-	user, err := store.GetUser(req.Context(), id)
+	user, err := ss.Store.GetUser(req.Context(), id)
 
 	// check if we got the user successfully
 	if err = util.CheckError(err, res, req); err != nil {
@@ -100,7 +95,7 @@ func GetUserFromID(res http.ResponseWriter, req *http.Request, store *db.Store) 
 
 // GetUserFromEmail returns user from the given email path string
 func GetUserFromEmail(res http.ResponseWriter, req *http.Request, store *db.Store) {
-	res.Header().Set("Content-Type", "application/json")
+
 	// get the email query from URL
 	email := req.PathValue("email")
 
@@ -117,7 +112,7 @@ func GetUserFromEmail(res http.ResponseWriter, req *http.Request, store *db.Stor
 }
 
 func UpdateUserInfo(res http.ResponseWriter, req *http.Request, store *db.Store) {
-	// res.Header().Set("Content-Type", "application/json")
+	//
 	// // get the id query from URL
 	// uid, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
 
@@ -164,7 +159,6 @@ func UpdatePassword(res http.ResponseWriter, req *http.Request, store *db.Store,
 //
 // this includes deleting their workouts, their exercises, and their sets
 func DeleteUser(res http.ResponseWriter, req *http.Request, store *db.Store) {
-	res.Header().Set("Content-Type", "application/json")
 
 	id, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
 
@@ -183,10 +177,9 @@ func DeleteUser(res http.ResponseWriter, req *http.Request, store *db.Store) {
 }
 
 // LoginUser returns the access token for the user, provided their email and password and if it is a valid email/password combination
-func LoginUser(res http.ResponseWriter, req *http.Request, store *db.Store, serverStore *ServerStore) {
-	res.Header().Set("Content-Type", "application/json")
+func (ss *ServerStore) LoginUser(res http.ResponseWriter, req *http.Request) {
 
-	user, err := store.GetUserEmail(req.Context(), req.Header.Get("email"))
+	user, err := ss.Store.GetUserEmail(req.Context(), req.Header.Get("email"))
 
 	// check if we got the user successfully
 	if err = util.CheckError(err, res, req); err != nil {
@@ -200,9 +193,9 @@ func LoginUser(res http.ResponseWriter, req *http.Request, store *db.Store, serv
 		return
 	}
 
-	accessToken, err := serverStore.TokenMaker.CreateToken(
+	accessToken, err := ss.TokenMaker.CreateToken(
 		user.Email,
-		serverStore.Config.AccessTokenDuration,
+		ss.Config.AccessTokenDuration,
 	)
 
 	// check if we got the user successfully

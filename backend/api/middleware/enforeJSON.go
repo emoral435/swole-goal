@@ -22,7 +22,7 @@ func EnforceJSONHandler(next http.Handler) http.Handler {
 
 			if mt != "application/json" {
 				http.Error(res, "Content-Type header must be application/json", http.StatusUnsupportedMediaType)
-				json.NewEncoder(res).Encode(util.CreateErrorResponse(err.Error(), http.StatusBadRequest))
+				json.NewEncoder(res).Encode(util.CreateErrorResponse(mt, http.StatusBadRequest))
 				return
 			}
 		}
