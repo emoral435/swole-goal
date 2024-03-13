@@ -6,22 +6,21 @@ import (
 	"net/http"
 
 	"github.com/emoral435/swole-goal/api/routes"
-	db "github.com/emoral435/swole-goal/db/sqlc"
 	util "github.com/emoral435/swole-goal/utils"
 )
 
 // Serve serves the API for our application
 //
 // defines the server muxiplexer interface, and using package router, defines routes and handlers
-func Serve(connection *sql.DB, config util.Config) {
+func Serve(connection *sql.DB, config util.Config, serverStore *routes.ServerStore) {
 	muxRouter := http.NewServeMux()
 
-	store := db.NewStore(connection)
-
 	// defines all our routes and the handlers for each route and METHOD
-	serveRoutes(muxRouter, store)
+	serveRoutes(muxRouter, serverStore)
 
-	fmt.Println("Server started!")
+	// successful start - everything connecting went well
+	fmt.Println("Server starting!")
+
 	// starts the server
 	if err := http.ListenAndServe(config.ServerAddress, muxRouter); err != nil {
 		fmt.Printf("Something went wrong!")
@@ -29,19 +28,7 @@ func Serve(connection *sql.DB, config util.Config) {
 	}
 }
 
-func serveRoutes(mux *http.ServeMux, store *db.Store) {
-	// just for me hehe
-	mux.HandleFunc("GET /", func(res http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(res, "server hath started")
-	})
-
-	// creates a user using http headers
-	mux.HandleFunc("POST /user", func(res http.ResponseWriter, req *http.Request) {
-		routes.CreateUser(res, req, store)
-	})
-
-	// gets a single user
-	mux.HandleFunc("GET /user/{id}", func(res http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(res, "server hath started, with an id of %s", req.PathValue("id"))
-	})
+// the place where all routes of the API are registered
+func serveRoutes(mux *http.ServeMux, serverStore *routes.ServerStore) {
+	routes.ServerUsers(mux, serverStore) // found in routes/user.go
 }

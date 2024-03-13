@@ -6,6 +6,9 @@ import (
 	"log"
 
 	server "github.com/emoral435/swole-goal/api"
+	"github.com/emoral435/swole-goal/api/routes"
+	"github.com/emoral435/swole-goal/api/token"
+	db "github.com/emoral435/swole-goal/db/sqlc"
 	util "github.com/emoral435/swole-goal/utils"
 	_ "github.com/lib/pq" // needed to connect to database -> https://stackoverflow.com/a/52791919/19919302
 )
@@ -28,6 +31,17 @@ func main() {
 		return
 	}
 
+	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
+
+	if err != nil {
+		log.Fatal("Bad token...")
+		return
+	}
+
+	store := db.NewStore(conn)
+
+	s := routes.CreateServerStore(tokenMaker, config, store)
+
 	// serve our api with our database connection
-	server.Serve(conn, config)
+	server.Serve(conn, config, s)
 }
