@@ -1,10 +1,13 @@
 package routes
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/araddon/dateparse"
 	mw "github.com/emoral435/swole-goal/api/middleware"
 	db "github.com/emoral435/swole-goal/db/sqlc"
 	util "github.com/emoral435/swole-goal/utils"
@@ -20,15 +23,13 @@ func ServerUsers(mux *http.ServeMux, ss *ServerStore) {
 	// gets a user using their email
 	mux.Handle("GET /user/email/{email}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.GetUserFromEmail))))
 
-	// // updates a users information, a user that correlates to their UID/email (probably will be using a form)
-	// mux.HandleFunc("PUT /user/{id}", func(res http.ResponseWriter, req *http.Request) {
-	// 	UpdateUserInfo(res, req, store)
-	// })
+	// updates a users information, a user that correlates to their UID/email (probably will be using a form)
+	mux.Handle("PUT /user/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.UpdateUserInfo))))
 
 	// deletes a single user
 	mux.Handle("DELETE /user/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.DeleteUser))))
 
-	// // handles the authentication of a user with their JWT token
+	// handles the authentication of a user with their JWT token
 	mux.HandleFunc("POST /user/login", ss.LoginUser)
 }
 
@@ -104,48 +105,79 @@ func (ss *ServerStore) GetUserFromEmail(res http.ResponseWriter, req *http.Reque
 	json.NewEncoder(res).Encode(user)
 }
 
-func (ss *ServerStore) UpdateUserInfo(res http.ResponseWriter, req *http.Request, store *db.Store) {
-	//
-	// // get the id query from URL
-	// uid, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
+func (ss *ServerStore) UpdateUserInfo(res http.ResponseWriter, req *http.Request) {
 
-	// // deal with bad request (query is invalid)
-	// if err = util.CheckError(err, res, req); err != nil {
-	// 	return
-	// }
+	// get the id query from URL
+	uid, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
+
+	// deal with bad request (query is invalid)
+	if err = util.CheckError(err, res, req); err != nil {
+		return
+	}
+
+	currentUserInfo, userExists := ss.Store.GetUser(req.Context(), uid)
+
+	// deal with bad request (query is invalid)
+	if userExists = util.CheckError(userExists, res, req); userExists != nil {
+		return
+	}
 
 	// new user information
-	// newEmail := req.Header.Get("email")
-	// newPassword := req.Header.Get("password")
-	// newUsername := req.Header.Get("username")
-	// newBirthday := req.Header.Get("birthday")
+	bdayFormattedTime, isValid := parseBirthday(req.Header.Get("birthday"))
+	newBirthday := sql.NullTime{
+		Time:  bdayFormattedTime,
+		Valid: isValid,
+	}
 
-	// if len(newPassword) > 0 {
-	// 	UpdatePassword(res, req, store, newPassword, uid)
-	// }
+	newPassword := req.Header.Get("password")
+	newUserInfo := db.CreateNewUserInfo(req.Header.Get("email"), req.Header.Get("username"), newBirthday)
 
-	// // what we need in the url query
-	// pswrdParams := db.UpdatePasswordParams{
-	// 	ID:       id,
-	// 	Password: req.Header.Get("password"),
-	// }
+	if len(newPassword) > 0 {
+		// UpdatePassword(res, req, ss, newPassword, uid)
+		_, err := ss.Store.UpdatePassword(req.Context(), *db.CreateUpdatePasswordParam(uid, newPassword))
+		if err = util.CheckError(err, res, req); err != nil {
+			return
+		}
+	}
 
-	// bdayParams := db.UpdateBirthdayParams{
-	// 	ID:       id,
-	// 	Birthday: req.Header.Get("password"),
-	// }
+	if len(newUserInfo.Username) > 0 {
+		// UpdatePassword(res, req, ss, newPassword, uid)
+		_, err := ss.Store.UpdateUsername(req.Context(), *db.CreateUpdateUsernameParam(uid, newUserInfo.Username))
+		if err = util.CheckError(err, res, req); err != nil {
+			newUserInfo.Username = currentUserInfo.Username
+			return
+		}
+	}
 
-	// if len(arg.Password) > 0 {
-	// }
+	if len(newUserInfo.Email) > 0 {
+		// UpdatePassword(res, req, ss, newPassword, uid)
+		_, err := ss.Store.UpdateEmail(req.Context(), *db.CreateUpdateEmailParam(uid, newUserInfo.Email))
+		if err = util.CheckError(err, res, req); err != nil {
+			newUserInfo.Email = currentUserInfo.Email
+			return
+		}
+	}
 
+	if newUserInfo.Birthday.Valid {
+		// UpdatePassword(res, req, ss, newPassword, uid)
+		_, err := ss.Store.UpdateBirthday(req.Context(), *db.CreateUpdateBrithdayParams(uid, newUserInfo.Birthday))
+		if err = util.CheckError(err, res, req); err != nil {
+			newUserInfo.Birthday = currentUserInfo.Birthday
+			return
+		}
+	}
+
+	// send back the correct response
+	res.WriteHeader(http.StatusOK)
+	json.NewEncoder(res).Encode(newUserInfo)
 }
 
-func UpdatePassword(res http.ResponseWriter, req *http.Request, store *db.Store, newPassowrd string, uid int64) {
-	// what we need in the url query
-	// pswrdParams := db.UpdatePasswordParams{
-	// 	ID:       id,
-	// 	Password: req.Header.Get("password"),
-	// }
+func parseBirthday(bday string) (time.Time, bool) {
+	newBday, err := dateparse.ParseStrict(bday)
+	if err != nil {
+		return time.Time{}, false
+	}
+	return newBday, true
 }
 
 // deletes a user, and all their information within the database
