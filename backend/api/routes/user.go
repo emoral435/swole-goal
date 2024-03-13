@@ -24,7 +24,7 @@ func ServerUsers(mux *http.ServeMux, ss *ServerStore) {
 	mux.Handle("GET /user/email/{email}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.GetUserFromEmail))))
 
 	// updates a users information, a user that correlates to their UID/email (probably will be using a form)
-	mux.Handle("PUT /user/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.UpdateUserInfo))))
+	mux.Handle("PUT /user/{id}", mw.EnforceJSONHandler(http.HandlerFunc(ss.UpdateUserInfo)))
 
 	// deletes a single user
 	mux.Handle("DELETE /user/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.DeleteUser))))

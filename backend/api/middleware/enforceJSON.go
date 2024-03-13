@@ -16,7 +16,10 @@ func EnforceJSONHandler(next http.Handler) http.Handler {
 			mt, _, err := mime.ParseMediaType(contentType)
 			if err != nil {
 				http.Error(res, "Malformed Content-Type header", http.StatusBadRequest)
-				json.NewEncoder(res).Encode(util.CreateErrorResponse(err.Error(), http.StatusBadRequest))
+				gotEncoded := json.NewEncoder(res).Encode(util.CreateErrorResponse(err.Error(), http.StatusBadRequest))
+				if gotEncoded != nil {
+					http.Error(res, "Also could not format the response lol.", http.StatusInternalServerError)
+				}
 				return
 			}
 

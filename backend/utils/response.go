@@ -44,12 +44,19 @@ func CheckError(err error, res http.ResponseWriter, req *http.Request) error {
 		// database error - most likely the users fault
 		if err == sql.ErrNoRows {
 			res.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(res).Encode(CreateErrorResponse(err.Error(), http.StatusBadRequest))
+			gotEncoded := json.NewEncoder(res).Encode(CreateErrorResponse(err.Error(), http.StatusBadRequest))
+			if gotEncoded != nil {
+				return gotEncoded
+			}
+			return err
 		}
 
 		// server-side error
 		res.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(res).Encode(CreateErrorResponse(err.Error(), http.StatusInternalServerError))
+		gotEncoded := json.NewEncoder(res).Encode(CreateErrorResponse(err.Error(), http.StatusInternalServerError))
+		if gotEncoded != nil {
+			return gotEncoded
+		}
 		return err
 	}
 	return nil
