@@ -17,23 +17,16 @@ func ServerUsers(mux *http.ServeMux, ss *ServerStore) {
 	// gets a user by their id
 	mux.Handle("GET /user/id/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.GetUserFromID))))
 
-	// // gets a user using their email
-	// mux.HandleFunc("GET /user/email/{email}", func(res http.ResponseWriter, req *http.Request) {
-	// 	GetUserFromEmail(res, req, store)
-	// })
+	// gets a user using their email
+	mux.Handle("GET /user/email/{email}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.GetUserFromEmail))))
 
 	// // updates a users information, a user that correlates to their UID/email (probably will be using a form)
 	// mux.HandleFunc("PUT /user/{id}", func(res http.ResponseWriter, req *http.Request) {
 	// 	UpdateUserInfo(res, req, store)
 	// })
 
-	// finalUpdateUserHandler := http.HandlerFunc(UpdateUserInfo)
-	// mux.Handle("/", mw.EnforceJSONHandler(mw.AuthMiddleware(serverStore.TokenMaker, finalUpdateUserHandler)))
-
-	// // deletes a single user
-	// mux.HandleFunc("DELETE /user/{id}", func(res http.ResponseWriter, req *http.Request) {
-	// 	DeleteUser(res, req, store)
-	// })
+	// deletes a single user
+	mux.Handle("DELETE /user/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.DeleteUser))))
 
 	// // handles the authentication of a user with their JWT token
 	mux.HandleFunc("POST /user/login", ss.LoginUser)
@@ -94,12 +87,12 @@ func (ss *ServerStore) GetUserFromID(res http.ResponseWriter, req *http.Request)
 }
 
 // GetUserFromEmail returns user from the given email path string
-func GetUserFromEmail(res http.ResponseWriter, req *http.Request, store *db.Store) {
+func (ss *ServerStore) GetUserFromEmail(res http.ResponseWriter, req *http.Request) {
 
 	// get the email query from URL
 	email := req.PathValue("email")
 
-	user, err := store.GetUserEmail(req.Context(), email)
+	user, err := ss.Store.GetUserEmail(req.Context(), email)
 
 	// check if we got the user successfully
 	if err = util.CheckError(err, res, req); err != nil {
@@ -111,7 +104,7 @@ func GetUserFromEmail(res http.ResponseWriter, req *http.Request, store *db.Stor
 	json.NewEncoder(res).Encode(user)
 }
 
-func UpdateUserInfo(res http.ResponseWriter, req *http.Request, store *db.Store) {
+func (ss *ServerStore) UpdateUserInfo(res http.ResponseWriter, req *http.Request, store *db.Store) {
 	//
 	// // get the id query from URL
 	// uid, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
@@ -158,7 +151,7 @@ func UpdatePassword(res http.ResponseWriter, req *http.Request, store *db.Store,
 // deletes a user, and all their information within the database
 //
 // this includes deleting their workouts, their exercises, and their sets
-func DeleteUser(res http.ResponseWriter, req *http.Request, store *db.Store) {
+func (ss *ServerStore) DeleteUser(res http.ResponseWriter, req *http.Request) {
 
 	id, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
 
@@ -166,7 +159,7 @@ func DeleteUser(res http.ResponseWriter, req *http.Request, store *db.Store) {
 		return
 	}
 
-	err = store.DeleteUser(req.Context(), id)
+	err = ss.Store.DeleteUser(req.Context(), id)
 
 	if err = util.CheckError(err, res, req); err != nil {
 		return
