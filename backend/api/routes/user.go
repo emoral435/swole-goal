@@ -59,9 +59,7 @@ func (ss *ServerStore) CreateUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// return user in the form of JSON
-	res.WriteHeader(http.StatusOK)
-	json.NewEncoder(res).Encode(user)
+	util.ReturnValidJSONResponse(res, user)
 }
 
 // GetUserFromID returns user from the given ID string
@@ -82,9 +80,7 @@ func (ss *ServerStore) GetUserFromID(res http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	// send back the correct response
-	res.WriteHeader(http.StatusOK)
-	json.NewEncoder(res).Encode(user)
+	util.ReturnValidJSONResponse(res, user)
 }
 
 // GetUserFromEmail returns user from the given email path string
@@ -100,9 +96,7 @@ func (ss *ServerStore) GetUserFromEmail(res http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	// send back the correct response
-	res.WriteHeader(http.StatusOK)
-	json.NewEncoder(res).Encode(user)
+	util.ReturnValidJSONResponse(res, user)
 }
 
 func (ss *ServerStore) UpdateUserInfo(res http.ResponseWriter, req *http.Request) {
@@ -160,18 +154,20 @@ func (ss *ServerStore) UpdateUserInfo(res http.ResponseWriter, req *http.Request
 
 	if newUserInfo.Birthday.Valid {
 		// UpdatePassword(res, req, ss, newPassword, uid)
-		_, err := ss.Store.UpdateBirthday(req.Context(), *db.CreateUpdateBrithdayParams(uid, newUserInfo.Birthday))
+		_, err := ss.Store.UpdateBirthday(req.Context(), *db.CreateUpdateBirthdayParams(uid, newUserInfo.Birthday))
 		if err = util.CheckError(err, res, req); err != nil {
 			newUserInfo.Birthday = currentUserInfo.Birthday
 			return
 		}
 	}
 
-	// send back the correct response
-	res.WriteHeader(http.StatusOK)
-	json.NewEncoder(res).Encode(newUserInfo)
+	util.ReturnValidJSONResponse(res, newUserInfo)
 }
 
+// parseBirthday generates a sql.Time struct, given the input string
+//
+// if the input string is not convertable using dateparse library, returns err, and thus, returns an empty time struct and a boolean indicating invalid time.
+// Otherwise, returns the user-input string as a time.Time struct and a boolean indicating it was successfully parsed
 func parseBirthday(bday string) (time.Time, bool) {
 	newBday, err := dateparse.ParseStrict(bday)
 	if err != nil {
@@ -238,6 +234,9 @@ func (ss *ServerStore) LoginUser(res http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(res).Encode(rsp)
 }
 
+// loginUserResponse generates a struct that contains the access token for a user to utilize the API.
+//
+// This also contains the user as a item within the struct, which also has the users information
 type loginUserResponse struct {
 	AccessToken string  `json:"access_token"`
 	User        db.User `json:"user"`
