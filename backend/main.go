@@ -31,6 +31,7 @@ func main() {
 		return
 	}
 
+	// create the token maker service
 	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
 
 	if err != nil {
@@ -38,8 +39,10 @@ func main() {
 		return
 	}
 
+	// access the store of queiries that we can make
 	store := db.NewStore(conn)
 
+	// create the server store that we use all throughout API
 	s := routes.CreateServerStore(tokenMaker, config, store)
 
 	// serve our api with our database connection

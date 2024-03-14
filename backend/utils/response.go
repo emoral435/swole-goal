@@ -8,12 +8,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Generic Error Response
+// ErrorResponse is a generic errror response struct that we can return back as a JSON error response
 type ErrorResponse struct {
 	Error  string `json:"error"`
 	Status int    `json:"status"`
 }
 
+// CreateErrorResponse is a generic error response struct maker
 func CreateErrorResponse(errorMsg string, status int) *ErrorResponse {
 	return &ErrorResponse{
 		Error:  errorMsg,
@@ -21,12 +22,13 @@ func CreateErrorResponse(errorMsg string, status int) *ErrorResponse {
 	}
 }
 
-// Generic success response
+// SuccessResponse is a generic success response struct that we can return back as a JSON error response
 type SuccessResponse struct {
 	Message string `json:"message"`
 	Status  int    `json:"status"`
 }
 
+// CreateSuccessResponse is a generic success response struct maker
 func CreateSuccessResponse(successMsg string, status int) *SuccessResponse {
 	return &SuccessResponse{
 		Message: successMsg,
@@ -59,6 +61,7 @@ func CheckError(err error, res http.ResponseWriter, req *http.Request) error {
 		}
 		return err
 	}
+
 	return nil
 }
 
@@ -76,4 +79,13 @@ func HashPassword(password string) (string, error) {
 // CompareHash compares the password that we store in the database against the input password
 func CompareHash(hash string, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+}
+
+// ReturnValidJSONResponse sends back a http 200 status code indicating the request was successful and valid.
+//
+// This function accepts any valid JSON response to send back as a response as well
+func ReturnValidJSONResponse(res http.ResponseWriter, jsonObject any) {
+	// send back the correct response
+	res.WriteHeader(http.StatusOK)
+	json.NewEncoder(res).Encode(jsonObject)
 }
