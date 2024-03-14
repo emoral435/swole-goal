@@ -12,6 +12,7 @@ func CreateUpdatePasswordParam(ID int64, password string) *UpdatePasswordParams 
 	}
 }
 
+// CreateUpdateUsernameParam returns a new UpdateUsernameParams struct
 func CreateUpdateUsernameParam(ID int64, username string) *UpdateUsernameParams {
 	return &UpdateUsernameParams{
 		ID:       ID,
@@ -19,6 +20,7 @@ func CreateUpdateUsernameParam(ID int64, username string) *UpdateUsernameParams 
 	}
 }
 
+// CreateUpdateEmailParam returns a new UpdateEmailParams struct
 func CreateUpdateEmailParam(ID int64, email string) *UpdateEmailParams {
 	return &UpdateEmailParams{
 		ID:    ID,
@@ -26,6 +28,8 @@ func CreateUpdateEmailParam(ID int64, email string) *UpdateEmailParams {
 	}
 }
 
+// NewUserInfo is a struct that only contains non-sensitive information of a user.
+//This is all user information, outside of their password and when they created their account
 type NewUserInfo struct {
 	// email to sign in - also to send reminders
 	Email    string       `json:"email"`
@@ -33,6 +37,7 @@ type NewUserInfo struct {
 	Birthday sql.NullTime `json:"birthday"`
 }
 
+// CreateNewUserInfo returns a new NewUserInfo struct
 func CreateNewUserInfo(email string, username string, birthday sql.NullTime) *NewUserInfo {
 	return &NewUserInfo{
 		Email:    email,
@@ -41,7 +46,8 @@ func CreateNewUserInfo(email string, username string, birthday sql.NullTime) *Ne
 	}
 }
 
-func CreateUpdateBrithdayParams(ID int64, bday sql.NullTime) *UpdateBirthdayParams {
+// CreateUpdateBirthdayParams returns a new UpdateBirthdayParams struct
+func CreateUpdateBirthdayParams(ID int64, bday sql.NullTime) *UpdateBirthdayParams {
 	return &UpdateBirthdayParams{
 		ID:       ID,
 		Birthday: bday,
