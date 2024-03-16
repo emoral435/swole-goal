@@ -61,15 +61,35 @@ func (q *Queries) DeleteAllWorkouts(ctx context.Context, userID int64) error {
 
 const deleteSingleWorkout = `-- name: DeleteSingleWorkout :exec
 DELETE FROM "workouts"
-WHERE id = $1
+WHERE id = $1 AND user_id = $2
 `
+
+type DeleteSingleWorkoutParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
 
 // DeleteSingleWorkout: deletes a single user's workout
 //
 // returns: nothing! see https://docs.sqlc.dev/en/stable/reference/query-annotations.html for exec
-func (q *Queries) DeleteSingleWorkout(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteSingleWorkout, id)
+func (q *Queries) DeleteSingleWorkout(ctx context.Context, arg DeleteSingleWorkoutParams) error {
+	_, err := q.db.ExecContext(ctx, deleteSingleWorkout, arg.ID, arg.UserID)
 	return err
+}
+
+const getNumWorkouts = `-- name: GetNumWorkouts :one
+SELECT COUNT(*) FROM "workouts"
+WHERE user_id = $1
+`
+
+// GetNumWorkouts: returns the number of workouts a user has, provided their uid
+//
+// returns: the user's corresponding workout rows
+func (q *Queries) GetNumWorkouts(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getNumWorkouts, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const getUserWorkouts = `-- name: GetUserWorkouts :many
@@ -111,14 +131,19 @@ func (q *Queries) GetUserWorkouts(ctx context.Context, userID int64) ([]Workout,
 
 const getWorkout = `-- name: GetWorkout :one
 SELECT id, user_id, title, body, last_time FROM "workouts"
-WHERE id = $1 LIMIT 1
+WHERE id = $1 AND user_id = $2 LIMIT 1
 `
+
+type GetWorkoutParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
 
 // GetWorkout: returns an existing workout, given workout id
 //
 // returns: the corresponding workout row
-func (q *Queries) GetWorkout(ctx context.Context, id int64) (Workout, error) {
-	row := q.db.QueryRowContext(ctx, getWorkout, id)
+func (q *Queries) GetWorkout(ctx context.Context, arg GetWorkoutParams) (Workout, error) {
+	row := q.db.QueryRowContext(ctx, getWorkout, arg.ID, arg.UserID)
 	var i Workout
 	err := row.Scan(
 		&i.ID,
@@ -132,21 +157,22 @@ func (q *Queries) GetWorkout(ctx context.Context, id int64) (Workout, error) {
 
 const updateWorkoutBody = `-- name: UpdateWorkoutBody :one
 UPDATE "workouts"
-SET body = $2
-WHERE id = $1
+SET body = $3
+WHERE id = $1 and user_id = $2
 RETURNING id, user_id, title, body, last_time
 `
 
 type UpdateWorkoutBodyParams struct {
-	ID   int64  `json:"id"`
-	Body string `json:"body"`
+	ID     int64  `json:"id"`
+	UserID int64  `json:"user_id"`
+	Body   string `json:"body"`
 }
 
 // UpdateBody: updates workout's body text given its workouts id
 //
 // returns: the workouts new row
 func (q *Queries) UpdateWorkoutBody(ctx context.Context, arg UpdateWorkoutBodyParams) (Workout, error) {
-	row := q.db.QueryRowContext(ctx, updateWorkoutBody, arg.ID, arg.Body)
+	row := q.db.QueryRowContext(ctx, updateWorkoutBody, arg.ID, arg.UserID, arg.Body)
 	var i Workout
 	err := row.Scan(
 		&i.ID,
@@ -160,13 +186,14 @@ func (q *Queries) UpdateWorkoutBody(ctx context.Context, arg UpdateWorkoutBodyPa
 
 const updateWorkoutLast = `-- name: UpdateWorkoutLast :one
 UPDATE "workouts"
-SET last_time = $2
-WHERE id = $1
+SET last_time = $3
+WHERE id = $1 and user_id = $2
 RETURNING id, user_id, title, body, last_time
 `
 
 type UpdateWorkoutLastParams struct {
 	ID       int64     `json:"id"`
+	UserID   int64     `json:"user_id"`
 	LastTime time.Time `json:"last_time"`
 }
 
@@ -174,7 +201,7 @@ type UpdateWorkoutLastParams struct {
 //
 // returns: the workout's new corresponding row
 func (q *Queries) UpdateWorkoutLast(ctx context.Context, arg UpdateWorkoutLastParams) (Workout, error) {
-	row := q.db.QueryRowContext(ctx, updateWorkoutLast, arg.ID, arg.LastTime)
+	row := q.db.QueryRowContext(ctx, updateWorkoutLast, arg.ID, arg.UserID, arg.LastTime)
 	var i Workout
 	err := row.Scan(
 		&i.ID,
@@ -188,21 +215,22 @@ func (q *Queries) UpdateWorkoutLast(ctx context.Context, arg UpdateWorkoutLastPa
 
 const updateWorkoutTitle = `-- name: UpdateWorkoutTitle :one
 UPDATE "workouts"
-SET title = $2
-WHERE id = $1
+SET title = $3
+WHERE id = $1 and user_id = $2
 RETURNING id, user_id, title, body, last_time
 `
 
 type UpdateWorkoutTitleParams struct {
-	ID    int64  `json:"id"`
-	Title string `json:"title"`
+	ID     int64  `json:"id"`
+	UserID int64  `json:"user_id"`
+	Title  string `json:"title"`
 }
 
 // UpdateWorkoutTitle: updates workouts title given its id
 //
 // returns: the workout's new corresponding row
 func (q *Queries) UpdateWorkoutTitle(ctx context.Context, arg UpdateWorkoutTitleParams) (Workout, error) {
-	row := q.db.QueryRowContext(ctx, updateWorkoutTitle, arg.ID, arg.Title)
+	row := q.db.QueryRowContext(ctx, updateWorkoutTitle, arg.ID, arg.UserID, arg.Title)
 	var i Workout
 	err := row.Scan(
 		&i.ID,

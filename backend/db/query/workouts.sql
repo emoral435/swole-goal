@@ -15,20 +15,27 @@ INSERT INTO "workouts" (
 SELECT * FROM "workouts"
 WHERE user_id = $1;
 
+-- GetNumWorkouts: returns the number of workouts a user has, provided their uid
+--
+-- returns: the user's corresponding workout rows
+-- name: GetNumWorkouts :one
+SELECT COUNT(*) FROM "workouts"
+WHERE user_id = $1;
+
 -- GetWorkout: returns an existing workout, given workout id
 --
 -- returns: the corresponding workout row
 -- name: GetWorkout :one
 SELECT * FROM "workouts"
-WHERE id = $1 LIMIT 1;
+WHERE id = $1 AND user_id = $2 LIMIT 1;
 
 -- UpdateWorkoutTitle: updates workouts title given its id
 --
 -- returns: the workout's new corresponding row
 -- name: UpdateWorkoutTitle :one
 UPDATE "workouts"
-SET title = $2
-WHERE id = $1
+SET title = $3
+WHERE id = $1 AND user_id = $2
 RETURNING *;
 
 -- UpdateBody: updates workout's body text given its workouts id
@@ -36,8 +43,8 @@ RETURNING *;
 -- returns: the workouts new row
 -- name: UpdateWorkoutBody :one
 UPDATE "workouts"
-SET body = $2
-WHERE id = $1
+SET body = $3
+WHERE id = $1 AND user_id = $2
 RETURNING *;
 
 -- UpdateLastWorkout: updates workout's last workout time given its id
@@ -45,8 +52,8 @@ RETURNING *;
 -- returns: the workout's new corresponding row
 -- name: UpdateWorkoutLast :one
 UPDATE "workouts"
-SET last_time = $2
-WHERE id = $1
+SET last_time = $3
+WHERE id = $1 AND user_id = $2
 RETURNING *;
 
 -- DeleteSingleWorkout: deletes a single user's workout
@@ -54,7 +61,7 @@ RETURNING *;
 -- returns: nothing! see https://docs.sqlc.dev/en/stable/reference/query-annotations.html for exec
 -- name: DeleteSingleWorkout :exec
 DELETE FROM "workouts"
-WHERE id = $1;
+WHERE id = $1 AND user_id = $2;
 
 -- DeleteAllWorkouts: deletes All user's workouts
 --

@@ -81,6 +81,15 @@ func CompareHash(hash string, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }
 
+// ReturnErrorJSONResponse sends back an error http status code indicating the request was not valid and an error string.
+//
+// This function accepts any valid JSON response to send back as a response as well
+func ReturnErrorJSONResponse(res http.ResponseWriter, errStr string, statusCode int) {
+	// send back the correct response
+	res.WriteHeader(statusCode)
+	json.NewEncoder(res).Encode(CreateErrorResponse(errStr, statusCode))
+}
+
 // ReturnValidJSONResponse sends back a http 200 status code indicating the request was successful and valid.
 //
 // This function accepts any valid JSON response to send back as a response as well

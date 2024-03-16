@@ -9,34 +9,36 @@ import (
 
 	"github.com/araddon/dateparse"
 	mw "github.com/emoral435/swole-goal/api/middleware"
+	"github.com/emoral435/swole-goal/api/token"
 	db "github.com/emoral435/swole-goal/db/sqlc"
 	util "github.com/emoral435/swole-goal/utils"
 )
 
 func ServerUsers(mux *http.ServeMux, ss *ServerStore) {
+	uAPI := createUserAPIStruct(ss.TokenMaker, ss.Store, ss.Config) // implements IUser interface
 	// creates a user using http headers
-	mux.Handle("POST /user", mw.EnforceJSONHandler(http.HandlerFunc(ss.CreateUser)))
+	mux.Handle("POST /user", mw.EnforceJSONHandler(http.HandlerFunc(uAPI.CreateUser)))
 
 	// gets a user by their id
-	mux.Handle("GET /user/id/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.GetUserFromID))))
+	mux.Handle("GET /user/id/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(uAPI.TokenMaker(), http.HandlerFunc(uAPI.GetUserFromID))))
 
 	// gets a user using their email
-	mux.Handle("GET /user/email/{email}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.GetUserFromEmail))))
+	mux.Handle("GET /user/email/{email}", mw.EnforceJSONHandler(mw.AuthMiddleware(uAPI.TokenMaker(), http.HandlerFunc(uAPI.GetUserFromEmail))))
 
 	// updates a users information, a user that correlates to their UID/email (probably will be using a form)
-	mux.Handle("PUT /user/{id}", mw.EnforceJSONHandler(http.HandlerFunc(ss.UpdateUserInfo)))
+	mux.Handle("PUT /user/{id}", mw.EnforceJSONHandler(http.HandlerFunc(uAPI.UpdateUserInfo)))
 
 	// deletes a single user
-	mux.Handle("DELETE /user/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(ss.TokenMaker, http.HandlerFunc(ss.DeleteUser))))
+	mux.Handle("DELETE /user/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(uAPI.TokenMaker(), http.HandlerFunc(uAPI.DeleteUser))))
 
 	// handles the authentication of a user with their JWT token
-	mux.HandleFunc("POST /user/login", ss.LoginUser)
+	mux.HandleFunc("POST /user/login", uAPI.LoginUser)
 }
 
 // CreateUser creates a new user, using their email, password, and username.
 //
 // This also stores their birthday and the time their account was created.
-func (ss *ServerStore) CreateUser(res http.ResponseWriter, req *http.Request) {
+func (api *UserAPI) CreateUser(res http.ResponseWriter, req *http.Request) {
 
 	hashedPassword, err := util.HashPassword(req.Header.Get("password"))
 
@@ -52,7 +54,7 @@ func (ss *ServerStore) CreateUser(res http.ResponseWriter, req *http.Request) {
 		Username: req.Header.Get("username"),
 	}
 
-	user, err := ss.Store.CreateUser(req.Context(), arg)
+	user, err := api.Store().CreateUser(req.Context(), arg)
 
 	// deal with bad request (params for creating user not satisfied)
 	if err = util.CheckError(err, res, req); err != nil {
@@ -63,7 +65,7 @@ func (ss *ServerStore) CreateUser(res http.ResponseWriter, req *http.Request) {
 }
 
 // GetUserFromID returns user from the given ID string
-func (ss *ServerStore) GetUserFromID(res http.ResponseWriter, req *http.Request) {
+func (api *UserAPI) GetUserFromID(res http.ResponseWriter, req *http.Request) {
 
 	// get the id query from URL
 	id, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
@@ -73,7 +75,7 @@ func (ss *ServerStore) GetUserFromID(res http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	user, err := ss.Store.GetUser(req.Context(), id)
+	user, err := api.Store().GetUser(req.Context(), id)
 
 	// check if we got the user successfully
 	if err = util.CheckError(err, res, req); err != nil {
@@ -84,12 +86,12 @@ func (ss *ServerStore) GetUserFromID(res http.ResponseWriter, req *http.Request)
 }
 
 // GetUserFromEmail returns user from the given email path string
-func (ss *ServerStore) GetUserFromEmail(res http.ResponseWriter, req *http.Request) {
+func (api *UserAPI) GetUserFromEmail(res http.ResponseWriter, req *http.Request) {
 
 	// get the email query from URL
 	email := req.PathValue("email")
 
-	user, err := ss.Store.GetUserEmail(req.Context(), email)
+	user, err := api.Store().GetUserEmail(req.Context(), email)
 
 	// check if we got the user successfully
 	if err = util.CheckError(err, res, req); err != nil {
@@ -99,7 +101,7 @@ func (ss *ServerStore) GetUserFromEmail(res http.ResponseWriter, req *http.Reque
 	util.ReturnValidJSONResponse(res, user)
 }
 
-func (ss *ServerStore) UpdateUserInfo(res http.ResponseWriter, req *http.Request) {
+func (api *UserAPI) UpdateUserInfo(res http.ResponseWriter, req *http.Request) {
 
 	// get the id query from URL
 	uid, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
@@ -109,7 +111,7 @@ func (ss *ServerStore) UpdateUserInfo(res http.ResponseWriter, req *http.Request
 		return
 	}
 
-	currentUserInfo, userExists := ss.Store.GetUser(req.Context(), uid)
+	currentUserInfo, userExists := api.Store().GetUser(req.Context(), uid)
 
 	// deal with bad request (query is invalid)
 	if userExists = util.CheckError(userExists, res, req); userExists != nil {
@@ -128,7 +130,7 @@ func (ss *ServerStore) UpdateUserInfo(res http.ResponseWriter, req *http.Request
 
 	if len(newPassword) > 0 {
 		// UpdatePassword(res, req, ss, newPassword, uid)
-		_, err := ss.Store.UpdatePassword(req.Context(), *db.CreateUpdatePasswordParam(uid, newPassword))
+		_, err := api.Store().UpdatePassword(req.Context(), *db.CreateUpdatePasswordParam(uid, newPassword))
 		if err = util.CheckError(err, res, req); err != nil {
 			return
 		}
@@ -136,7 +138,7 @@ func (ss *ServerStore) UpdateUserInfo(res http.ResponseWriter, req *http.Request
 
 	if len(newUserInfo.Username) > 0 {
 		// UpdatePassword(res, req, ss, newPassword, uid)
-		_, err := ss.Store.UpdateUsername(req.Context(), *db.CreateUpdateUsernameParam(uid, newUserInfo.Username))
+		_, err := api.Store().UpdateUsername(req.Context(), *db.CreateUpdateUsernameParam(uid, newUserInfo.Username))
 		if err = util.CheckError(err, res, req); err != nil {
 			newUserInfo.Username = currentUserInfo.Username
 			return
@@ -145,7 +147,7 @@ func (ss *ServerStore) UpdateUserInfo(res http.ResponseWriter, req *http.Request
 
 	if len(newUserInfo.Email) > 0 {
 		// UpdatePassword(res, req, ss, newPassword, uid)
-		_, err := ss.Store.UpdateEmail(req.Context(), *db.CreateUpdateEmailParam(uid, newUserInfo.Email))
+		_, err := api.Store().UpdateEmail(req.Context(), *db.CreateUpdateEmailParam(uid, newUserInfo.Email))
 		if err = util.CheckError(err, res, req); err != nil {
 			newUserInfo.Email = currentUserInfo.Email
 			return
@@ -154,7 +156,7 @@ func (ss *ServerStore) UpdateUserInfo(res http.ResponseWriter, req *http.Request
 
 	if newUserInfo.Birthday.Valid {
 		// UpdatePassword(res, req, ss, newPassword, uid)
-		_, err := ss.Store.UpdateBirthday(req.Context(), *db.CreateUpdateBirthdayParams(uid, newUserInfo.Birthday))
+		_, err := api.Store().UpdateBirthday(req.Context(), *db.CreateUpdateBirthdayParams(uid, newUserInfo.Birthday))
 		if err = util.CheckError(err, res, req); err != nil {
 			newUserInfo.Birthday = currentUserInfo.Birthday
 			return
@@ -179,7 +181,7 @@ func parseBirthday(bday string) (time.Time, bool) {
 // deletes a user, and all their information within the database
 //
 // this includes deleting their workouts, their exercises, and their sets
-func (ss *ServerStore) DeleteUser(res http.ResponseWriter, req *http.Request) {
+func (api *UserAPI) DeleteUser(res http.ResponseWriter, req *http.Request) {
 
 	id, err := strconv.ParseInt(req.PathValue("id"), 10, 64)
 
@@ -187,7 +189,7 @@ func (ss *ServerStore) DeleteUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = ss.Store.DeleteUser(req.Context(), id)
+	err = api.Store().DeleteUser(req.Context(), id)
 
 	if err = util.CheckError(err, res, req); err != nil {
 		return
@@ -198,9 +200,9 @@ func (ss *ServerStore) DeleteUser(res http.ResponseWriter, req *http.Request) {
 }
 
 // LoginUser returns the access token for the user, provided their email and password and if it is a valid email/password combination
-func (ss *ServerStore) LoginUser(res http.ResponseWriter, req *http.Request) {
+func (api *UserAPI) LoginUser(res http.ResponseWriter, req *http.Request) {
 
-	user, err := ss.Store.GetUserEmail(req.Context(), req.Header.Get("email"))
+	user, err := api.Store().GetUserEmail(req.Context(), req.Header.Get("email"))
 
 	// check if we got the user successfully
 	if err = util.CheckError(err, res, req); err != nil {
@@ -214,9 +216,9 @@ func (ss *ServerStore) LoginUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	accessToken, err := ss.TokenMaker.CreateToken(
+	accessToken, err := api.TokenMaker().CreateToken(
 		user.Email,
-		ss.Config.AccessTokenDuration,
+		api.Config().AccessTokenDuration,
 	)
 
 	// check if we got the user successfully
@@ -240,4 +242,35 @@ func (ss *ServerStore) LoginUser(res http.ResponseWriter, req *http.Request) {
 type loginUserResponse struct {
 	AccessToken string  `json:"access_token"`
 	User        db.User `json:"user"`
+}
+
+// UserAPI represents the API actions taken for each route for a user.
+//
+// Implements the IRouteStore interface.
+type UserAPI struct {
+	tokenMaker token.Maker
+	store      *db.Store
+	config     util.Config
+}
+
+// createUserAPI creates a new UserAPI struct instance
+func createUserAPIStruct(t token.Maker, store *db.Store, config util.Config) IUser {
+	return &UserAPI{
+		t,
+		store,
+		config,
+	}
+}
+
+func (u *UserAPI) TokenMaker() token.Maker {
+	return u.tokenMaker
+}
+
+func (u *UserAPI) Store() *db.Store {
+	return u.store
+}
+
+func (u *UserAPI) Config() util.Config {
+	return u.config
+
 }
