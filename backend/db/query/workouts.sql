@@ -34,8 +34,8 @@ WHERE id = $1 AND user_id = $2 LIMIT 1;
 -- returns: the workout's new corresponding row
 -- name: UpdateWorkoutTitle :one
 UPDATE "workouts"
-SET title = $2
-WHERE id = $1
+SET title = $3
+WHERE id = $1 AND user_id = $2
 RETURNING *;
 
 -- UpdateBody: updates workout's body text given its workouts id
@@ -43,8 +43,8 @@ RETURNING *;
 -- returns: the workouts new row
 -- name: UpdateWorkoutBody :one
 UPDATE "workouts"
-SET body = $2
-WHERE id = $1
+SET body = $3
+WHERE id = $1 AND user_id = $2
 RETURNING *;
 
 -- UpdateLastWorkout: updates workout's last workout time given its id
@@ -52,8 +52,8 @@ RETURNING *;
 -- returns: the workout's new corresponding row
 -- name: UpdateWorkoutLast :one
 UPDATE "workouts"
-SET last_time = $2
-WHERE id = $1
+SET last_time = $3
+WHERE id = $1 AND user_id = $2
 RETURNING *;
 
 -- DeleteSingleWorkout: deletes a single user's workout

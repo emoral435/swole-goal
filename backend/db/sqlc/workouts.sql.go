@@ -157,21 +157,22 @@ func (q *Queries) GetWorkout(ctx context.Context, arg GetWorkoutParams) (Workout
 
 const updateWorkoutBody = `-- name: UpdateWorkoutBody :one
 UPDATE "workouts"
-SET body = $2
-WHERE id = $1
+SET body = $3
+WHERE id = $1 and user_id = $2
 RETURNING id, user_id, title, body, last_time
 `
 
 type UpdateWorkoutBodyParams struct {
-	ID   int64  `json:"id"`
-	Body string `json:"body"`
+	ID     int64  `json:"id"`
+	UserID int64  `json:"user_id"`
+	Body   string `json:"body"`
 }
 
 // UpdateBody: updates workout's body text given its workouts id
 //
 // returns: the workouts new row
 func (q *Queries) UpdateWorkoutBody(ctx context.Context, arg UpdateWorkoutBodyParams) (Workout, error) {
-	row := q.db.QueryRowContext(ctx, updateWorkoutBody, arg.ID, arg.Body)
+	row := q.db.QueryRowContext(ctx, updateWorkoutBody, arg.ID, arg.UserID, arg.Body)
 	var i Workout
 	err := row.Scan(
 		&i.ID,
@@ -185,13 +186,14 @@ func (q *Queries) UpdateWorkoutBody(ctx context.Context, arg UpdateWorkoutBodyPa
 
 const updateWorkoutLast = `-- name: UpdateWorkoutLast :one
 UPDATE "workouts"
-SET last_time = $2
-WHERE id = $1
+SET last_time = $3
+WHERE id = $1 and user_id = $2
 RETURNING id, user_id, title, body, last_time
 `
 
 type UpdateWorkoutLastParams struct {
 	ID       int64     `json:"id"`
+	UserID   int64     `json:"user_id"`
 	LastTime time.Time `json:"last_time"`
 }
 
@@ -199,7 +201,7 @@ type UpdateWorkoutLastParams struct {
 //
 // returns: the workout's new corresponding row
 func (q *Queries) UpdateWorkoutLast(ctx context.Context, arg UpdateWorkoutLastParams) (Workout, error) {
-	row := q.db.QueryRowContext(ctx, updateWorkoutLast, arg.ID, arg.LastTime)
+	row := q.db.QueryRowContext(ctx, updateWorkoutLast, arg.ID, arg.UserID, arg.LastTime)
 	var i Workout
 	err := row.Scan(
 		&i.ID,
@@ -213,21 +215,22 @@ func (q *Queries) UpdateWorkoutLast(ctx context.Context, arg UpdateWorkoutLastPa
 
 const updateWorkoutTitle = `-- name: UpdateWorkoutTitle :one
 UPDATE "workouts"
-SET title = $2
-WHERE id = $1
+SET title = $3
+WHERE id = $1 and user_id = $2
 RETURNING id, user_id, title, body, last_time
 `
 
 type UpdateWorkoutTitleParams struct {
-	ID    int64  `json:"id"`
-	Title string `json:"title"`
+	ID     int64  `json:"id"`
+	UserID int64  `json:"user_id"`
+	Title  string `json:"title"`
 }
 
 // UpdateWorkoutTitle: updates workouts title given its id
 //
 // returns: the workout's new corresponding row
 func (q *Queries) UpdateWorkoutTitle(ctx context.Context, arg UpdateWorkoutTitleParams) (Workout, error) {
-	row := q.db.QueryRowContext(ctx, updateWorkoutTitle, arg.ID, arg.Title)
+	row := q.db.QueryRowContext(ctx, updateWorkoutTitle, arg.ID, arg.UserID, arg.Title)
 	var i Workout
 	err := row.Scan(
 		&i.ID,

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/araddon/dateparse"
 	mw "github.com/emoral435/swole-goal/api/middleware"
 	"github.com/emoral435/swole-goal/api/token"
 	db "github.com/emoral435/swole-goal/db/sqlc"
@@ -18,9 +19,9 @@ func ServeWorkouts(mux *http.ServeMux, ss *ServerStore) {
 	// get all users workouts
 	mux.Handle("GET /swole/workout", mw.EnforceJSONHandler(mw.AuthMiddleware(wAPI.TokenMaker(), http.HandlerFunc(wAPI.GetAllWorkouts))))
 	// modify a users workout
-	mux.Handle("PUT /swole/workout/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(wAPI.TokenMaker(), http.HandlerFunc(wAPI.ModifyWorkout))))
+	mux.Handle("PUT /swole/workout", mw.EnforceJSONHandler(mw.AuthMiddleware(wAPI.TokenMaker(), http.HandlerFunc(wAPI.ModifyWorkout))))
 	// delete a users workout given the workout ID
-	mux.Handle("DELETE /swole/workout/{id}", mw.EnforceJSONHandler(mw.AuthMiddleware(wAPI.TokenMaker(), http.HandlerFunc(wAPI.DeleteOneWorkout))))
+	mux.Handle("DELETE /swole/workout/{wid}", mw.EnforceJSONHandler(mw.AuthMiddleware(wAPI.TokenMaker(), http.HandlerFunc(wAPI.DeleteOneWorkout))))
 	// delete all user's workouts
 	mux.Handle("DELETE /swole/workout", mw.EnforceJSONHandler(mw.AuthMiddleware(wAPI.TokenMaker(), http.HandlerFunc(wAPI.DeleteAllWorkouts))))
 }
@@ -94,15 +95,66 @@ func (api *WorkoutAPI) GetAllWorkouts(res http.ResponseWriter, req *http.Request
 }
 
 func (api *WorkoutAPI) ModifyWorkout(res http.ResponseWriter, req *http.Request) {
-	// TODO
+	queries := req.URL.Query()
+	uid, errU := strconv.ParseInt(req.Header.Get("uid"), 10, 64)
+	wid, errW := strconv.ParseInt(queries.Get("wid"), 10, 64)
+	// invalid user uid
+	if errU != nil || errW != nil {
+		util.ReturnErrorJSONResponse(res, "Invalid user/workout id for fetching single workout", 400)
+		return
+	}
+	title, body, lastTime := queries.Get("title"), queries.Get("body"), queries.Get("lastTime")
+
+	if len(title) > 0 {
+		_, errTitle := modifyTitle(req, title, api.Store(), uid, wid)
+		if errTitle = util.CheckError(errTitle, res, req); errTitle != nil {
+			return
+		}
+	}
+	if len(body) > 0 {
+		_, errBody := modifyBody(req, body, api.Store(), uid, wid)
+		if errBody = util.CheckError(errBody, res, req); errBody != nil {
+			return
+		}
+	}
+	if len(lastTime) > 0 {
+		_, errLastTime := modifyLastTime(req, lastTime, api.Store(), uid, wid)
+		if errLastTime = util.CheckError(errLastTime, res, req); errLastTime != nil {
+			return
+		}
+	}
+
+	newWorkout, err := api.Store().GetWorkout(req.Context(), db.GetWorkoutParams{ID: wid, UserID: uid})
+
+	if err = util.CheckError(err, res, req); err != nil {
+		return
+	}
+
+	util.ReturnValidJSONResponse(res, newWorkout)
+}
+
+func modifyTitle(req *http.Request, title string, store *db.Store, uid int64, wid int64) (db.Workout, error) {
+	return store.Queries.UpdateWorkoutTitle(req.Context(), db.UpdateWorkoutTitleParams{ID: wid, UserID: uid, Title: title})
+}
+
+func modifyBody(req *http.Request, body string, store *db.Store, uid int64, wid int64) (db.Workout, error) {
+	return store.Queries.UpdateWorkoutBody(req.Context(), db.UpdateWorkoutBodyParams{ID: wid, UserID: uid, Body: body})
+}
+
+func modifyLastTime(req *http.Request, lastTime string, store *db.Store, uid int64, wid int64) (db.Workout, error) {
+	nTime, err := dateparse.ParseStrict(lastTime)
+	if err != nil {
+		nTime = time.Now()
+	}
+	return store.Queries.UpdateWorkoutLast(req.Context(), db.UpdateWorkoutLastParams{ID: wid, UserID: uid, LastTime: nTime})
 }
 
 func (api *WorkoutAPI) DeleteOneWorkout(res http.ResponseWriter, req *http.Request) {
 	uid, errU := strconv.ParseInt(req.Header.Get("uid"), 10, 64)
-	wid, errW := strconv.ParseInt(req.Header.Get("wid"), 10, 64)
+	wid, errW := strconv.ParseInt(req.PathValue("wid"), 10, 64)
 	// invalid user uid
 	if errU != nil || errW != nil {
-		util.ReturnErrorJSONResponse(res, "Invalid user/workout id for fetching all workouts", 400)
+		util.ReturnErrorJSONResponse(res, "Invalid user/workout id for fetching single workout", 400)
 		return
 	}
 
@@ -112,7 +164,7 @@ func (api *WorkoutAPI) DeleteOneWorkout(res http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	util.ReturnValidJSONResponse(res, util.CreateSuccessResponse("Successfully deleted all user workouts", 200))
+	util.ReturnValidJSONResponse(res, util.CreateSuccessResponse("Successfully deleted single user workouts", 200))
 }
 
 func (api *WorkoutAPI) DeleteAllWorkouts(res http.ResponseWriter, req *http.Request) {
