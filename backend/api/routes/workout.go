@@ -28,9 +28,9 @@ func ServeWorkouts(mux *http.ServeMux, ss *ServerStore) {
 }
 
 func (api *WorkoutAPI) CreateWorkout(res http.ResponseWriter, req *http.Request) {
-	queries := req.URL.Query()
+	queries, header := req.URL.Query(), req.Header
 	// for create workout params struct
-	uid, title, body := queries.Get("uid"), queries.Get("title"), queries.Get("body")
+	uid, title, body := header.Get("uid"), queries.Get("title"), queries.Get("body")
 	// invalid user uid
 	if len(uid) <= 0 {
 		util.ReturnErrorJSONResponse(res, "Invalid user id for the corresponding workout", 400)
@@ -78,7 +78,21 @@ func MakeCreateWorkoutParams(uid string, title string, body string) (*db.CreateW
 }
 
 func (api *WorkoutAPI) GetAllWorkouts(res http.ResponseWriter, req *http.Request) {
-	// TODO
+	uid, err := strconv.ParseInt(req.Header.Get("uid"), 10, 64)
+
+	// invalid user uid
+	if err != nil {
+		util.ReturnErrorJSONResponse(res, "Invalid user id for fetching all workouts", 400)
+		return
+	}
+
+	allWorkouts, err := api.Store().Queries.GetUserWorkouts(req.Context(), uid)
+
+	if err = util.CheckError(err, res, req); err != nil {
+		return
+	}
+
+	util.ReturnValidJSONResponse(res, allWorkouts)
 }
 
 func (api *WorkoutAPI) GetOneWorkout(res http.ResponseWriter, req *http.Request) {
