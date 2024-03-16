@@ -27,7 +27,7 @@ WHERE user_id = $1;
 -- returns: the corresponding workout row
 -- name: GetWorkout :one
 SELECT * FROM "workouts"
-WHERE id = $1 LIMIT 1;
+WHERE id = $1 AND user_id = $2 LIMIT 1;
 
 -- UpdateWorkoutTitle: updates workouts title given its id
 --
@@ -61,7 +61,7 @@ RETURNING *;
 -- returns: nothing! see https://docs.sqlc.dev/en/stable/reference/query-annotations.html for exec
 -- name: DeleteSingleWorkout :exec
 DELETE FROM "workouts"
-WHERE id = $1;
+WHERE id = $1 AND user_id = $2;
 
 -- DeleteAllWorkouts: deletes All user's workouts
 --

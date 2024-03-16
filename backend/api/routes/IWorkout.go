@@ -20,8 +20,6 @@ type IWorkout interface {
 	CreateWorkout(res http.ResponseWriter, req *http.Request)
 	// GetAllWorkouts returns a list of all workout's in the server store
 	GetAllWorkouts(res http.ResponseWriter, req *http.Request)
-	// GetOneWorkout returns a workout based on workout id within the database
-	GetOneWorkout(res http.ResponseWriter, req *http.Request)
 	// ModifyWorkout updates a users workout
 	ModifyWorkout(res http.ResponseWriter, req *http.Request)
 	// DeleteOneWorkout deletes one users workout

@@ -61,14 +61,19 @@ func (q *Queries) DeleteAllWorkouts(ctx context.Context, userID int64) error {
 
 const deleteSingleWorkout = `-- name: DeleteSingleWorkout :exec
 DELETE FROM "workouts"
-WHERE id = $1
+WHERE id = $1 AND user_id = $2
 `
+
+type DeleteSingleWorkoutParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
 
 // DeleteSingleWorkout: deletes a single user's workout
 //
 // returns: nothing! see https://docs.sqlc.dev/en/stable/reference/query-annotations.html for exec
-func (q *Queries) DeleteSingleWorkout(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteSingleWorkout, id)
+func (q *Queries) DeleteSingleWorkout(ctx context.Context, arg DeleteSingleWorkoutParams) error {
+	_, err := q.db.ExecContext(ctx, deleteSingleWorkout, arg.ID, arg.UserID)
 	return err
 }
 
@@ -126,14 +131,19 @@ func (q *Queries) GetUserWorkouts(ctx context.Context, userID int64) ([]Workout,
 
 const getWorkout = `-- name: GetWorkout :one
 SELECT id, user_id, title, body, last_time FROM "workouts"
-WHERE id = $1 LIMIT 1
+WHERE id = $1 AND user_id = $2 LIMIT 1
 `
+
+type GetWorkoutParams struct {
+	ID     int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+}
 
 // GetWorkout: returns an existing workout, given workout id
 //
 // returns: the corresponding workout row
-func (q *Queries) GetWorkout(ctx context.Context, id int64) (Workout, error) {
-	row := q.db.QueryRowContext(ctx, getWorkout, id)
+func (q *Queries) GetWorkout(ctx context.Context, arg GetWorkoutParams) (Workout, error) {
+	row := q.db.QueryRowContext(ctx, getWorkout, arg.ID, arg.UserID)
 	var i Workout
 	err := row.Scan(
 		&i.ID,
