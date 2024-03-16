@@ -72,6 +72,21 @@ func (q *Queries) DeleteSingleWorkout(ctx context.Context, id int64) error {
 	return err
 }
 
+const getNumWorkouts = `-- name: GetNumWorkouts :one
+SELECT COUNT(*) FROM "workouts"
+WHERE user_id = $1
+`
+
+// GetNumWorkouts: returns the number of workouts a user has, provided their uid
+//
+// returns: the user's corresponding workout rows
+func (q *Queries) GetNumWorkouts(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getNumWorkouts, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const getUserWorkouts = `-- name: GetUserWorkouts :many
 SELECT id, user_id, title, body, last_time FROM "workouts"
 WHERE user_id = $1

@@ -15,6 +15,13 @@ INSERT INTO "workouts" (
 SELECT * FROM "workouts"
 WHERE user_id = $1;
 
+-- GetNumWorkouts: returns the number of workouts a user has, provided their uid
+--
+-- returns: the user's corresponding workout rows
+-- name: GetNumWorkouts :one
+SELECT COUNT(*) FROM "workouts"
+WHERE user_id = $1;
+
 -- GetWorkout: returns an existing workout, given workout id
 --
 -- returns: the corresponding workout row
