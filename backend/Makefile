@@ -1,6 +1,7 @@
 # NOTE for dev env
 # DB_URL=postgresql://root:secret@host.docker.internal:5432/swole_goal?sslmode=disable
 DB_URL=postgresql://root:secret@localhost:5432/swole_goal?sslmode=disable
+DB_URL_AWS=postgresql://root:swole-goal.cllc73kmmpqz.us-east-2.rds.amazonaws.com@swole-goal.cllc73kmmpqz.us-east-2.rds.amazonaws.com:5432/swole_goal
 # QUICKFIX: if build is somehow not connecting to external DB extensions, and you are using WSL, check if you have a postgres port being listened on by using powershell
 # this stack overflow quesiton will guide you well -> https://stackoverflow.com/a/63007311/19919302
 # PERMANENT FIX: check to see if postgres runs on start on windows. if it does, disable that, and see if the problemn persists.
@@ -31,6 +32,10 @@ migrateup: # migrates the database 'swole-goal' up to the current migration vers
 
 migratedown: # migrates the database 'swole-goal' back to the previous migration version
 	migrate -path db/migration -database "${DB_URL}" -verbose down
+
+# for AWS RDS instance only
+migrateupaws: # migrates the database 'swole-goal' up to the current migration version
+	migrate -path db/migration -database "${DB_URL_AWS}" -verbose up
 
 # generates a new sqlc compiled sql statement to run
 sqlc:
