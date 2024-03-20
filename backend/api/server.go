@@ -30,6 +30,7 @@ func Serve(connection *sql.DB, config util.Config, serverStore *routes.ServerSto
 
 // the place where all routes of the API are registered
 func serveRoutes(mux *http.ServeMux, serverStore *routes.ServerStore) {
-	routes.ServerUsers(mux, serverStore)   // found in routes/user.go
-	routes.ServeWorkouts(mux, serverStore) // found in routes/workout.go
+	routes.ServerUsers(mux, serverStore)    // found in routes/user.go
+	routes.ServeWorkouts(mux, serverStore)  // found in routes/workout.go
+	routes.ServeExercises(mux, serverStore) // found in routes/exercise.go
 }

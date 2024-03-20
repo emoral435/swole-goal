@@ -106,7 +106,7 @@ func (api *WorkoutAPI) ModifyWorkout(res http.ResponseWriter, req *http.Request)
 	title, body, lastTime := queries.Get("title"), queries.Get("body"), queries.Get("lastTime")
 
 	if len(title) > 0 {
-		_, errTitle := modifyTitle(req, title, api.Store(), uid, wid)
+		_, errTitle := modifyTitleWorkout(req, title, api.Store(), uid, wid)
 		if errTitle = util.CheckError(errTitle, res, req); errTitle != nil {
 			return
 		}
@@ -133,7 +133,7 @@ func (api *WorkoutAPI) ModifyWorkout(res http.ResponseWriter, req *http.Request)
 	util.ReturnValidJSONResponse(res, newWorkout)
 }
 
-func modifyTitle(req *http.Request, title string, store *db.Store, uid int64, wid int64) (db.Workout, error) {
+func modifyTitleWorkout(req *http.Request, title string, store *db.Store, uid int64, wid int64) (db.Workout, error) {
 	return store.Queries.UpdateWorkoutTitle(req.Context(), db.UpdateWorkoutTitleParams{ID: wid, UserID: uid, Title: title})
 }
 
