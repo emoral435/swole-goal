@@ -31,8 +31,10 @@
 
 With Docker Desktop installed and opened, you can run these commands at the root directory of this GitHub repo...
 ```shell
+# if you are running this for the first time, or have made changes and want to see it take affect on its deployment, use this
+docker compose up -d --build
 # starts the application in its detached state
-docker compose up -d swole-goal
+docker compose up -d
 # turns off the application
 docker compose down
 # wipes the container clean, effectively deleting the volumes for the database
