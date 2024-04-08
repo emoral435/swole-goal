@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	export let project = 'Swole Goal'
 	let age = 0
 	$: calcedAge = age < 1 ? 0 : age * 6

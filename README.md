@@ -21,6 +21,25 @@
 * During my time at University learning relational databases, I realized that the underlying technology to store and track progression within the gym was something that I would love to challenge myself with!
 * An open-source solution to save money and customize to a communities liking 🤩💫
 
+## Screenshots of the application! 😲🚀
+
+## How do I run this locally? 💚🙂
+> [!NOTE]\
+> This program is fully hosted right now via localhost and package by a Docker container. I would love to host this on AWS, but I do not have the funds to manage their RDS instance :()
+>
+> Click -> [here](https://docs.docker.com/desktop/install/windows-install/) to go to the installation page.
+
+With Docker Desktop installed and opened, you can run these commands at the root directory of this GitHub repo...
+```shell
+# starts the application in its detached state
+docker compose up -d swole-goal
+# turns off the application
+docker compose down
+# wipes the container clean, effectively deleting the volumes for the database
+docker compose down -v
+```
+And then open up [localhost:4173](localhost:4173) 💚
+
 ## The Wiki 📕
 Visit the [wiki](https://github.com/emoral435/swole-goal/wiki) in order to see more documentation about...
 * How to use the software
