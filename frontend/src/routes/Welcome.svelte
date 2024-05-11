@@ -8,7 +8,7 @@
 </script>
 
 <h1>Welcome to project {project}</h1>
-<p>Visit <a href="https://github.com/emoral435/swole-goal">the repository</a> to find out more about this project!</p>
+<p >Visit <a href="https://github.com/emoral435/swole-goal">the repository</a> to find out more about this project!</p>
 <a href="/about">Click here to visit the about page.</a>
 
 <input type="number" bind:value={age} />
