@@ -60,7 +60,6 @@
 	import { goto } from '$app/navigation';
 
 	let darkTheme: boolean | undefined = undefined
-	let topScreen
 
 	onMount(() => {
 		darkTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
