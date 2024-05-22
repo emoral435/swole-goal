@@ -14,7 +14,7 @@
 		"test:integration": "playwright test",
 		"test:unit": "vitest",
 		"smui-theme": "smui-theme compile static/smui.css -i src/theme",
-		"prepare": "npm run smui-theme-light && npm run smui-theme-dark",
+		"prepare-smui": "npm run smui-theme-light && npm run smui-theme-dark",
 		"smui-theme-light": "smui-theme compile static/smui.css -i src/theme",
 		"smui-theme-dark": "smui-theme compile static/smui-dark.css -i src/theme/dark"
 	},

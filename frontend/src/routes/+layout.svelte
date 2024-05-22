@@ -20,6 +20,9 @@
 		color={darkTheme ? 'secondary' : 'primary'}>
 		<Row>
 			<Section>
+				
+			</Section>
+			<Section>
 				<Button on:click={() => goto('/')}
 					aria-label="Home">
 					SWOLE GOAL
