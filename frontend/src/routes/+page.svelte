@@ -1,20 +1,21 @@
-<div>Hello.</div>
-<Welcome project="Not Swole Goal" />
-<Button 
-	on:click={() => alert('It worked!')}
-	color="secondary">
-	Click me!
-</Button>
-<Button 
-	on:click={() => alert('It worked!')}
-	color="primary">
-	Click me too!
-</Button>
-<IconButton on:click={() => clicked++}>
-	<Icon tag="svg" viewBox="0 0 24 24">
-		<path fill="currentColor" d={mdiFormatColorFill} />
-	</Icon>
-</IconButton>
+<main class="main">
+	<Welcome />
+	<Button
+		on:click={() => alert('It worked!')}
+		color="secondary">
+		Click me!
+	</Button>
+	<Button
+		on:click={() => alert('It worked!')}
+		color="primary">
+		Click me too!
+	</Button>
+	<IconButton on:click={() => clicked++}>
+		<Icon tag="svg" viewBox="0 0 24 24">
+			<path fill="currentColor" d={mdiFormatColorFill} />
+		</Icon>
+	</IconButton>
+</main>
 
 <script lang="ts">
 	import Welcome from "./Welcome.svelte"
@@ -24,3 +25,14 @@
 
 	let clicked = 0
 </script>
+
+<style lang="scss">
+.main {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+</style>
