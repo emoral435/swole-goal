@@ -17,15 +17,14 @@ services:
       - DB_SOURCE=postgresql://root:secret@postgres:5432/swole_goal?sslmode=disable
     depends_on:
       - postgres
-    entrypoint: [ "/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh" ]
-    command: [ "/app/main" ]
-  
-  svelte:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "4173:4173"
-    depends_on:
-      - api
-      
+    entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
+    command: ["/app/main"]
+
+  # svelte:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "4173:4173"
+  #   depends_on:
+  #     - api
